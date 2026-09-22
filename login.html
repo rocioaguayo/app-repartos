@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>App-Repartos - Iniciar sesión</title>
+
+<!-- MISMO SDK que usan tus otros archivos (compat, con etiquetas <script>) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --gris: #f2f0ee;
+    --rosa: #e8c4c4;
+    --blanco: #ffffff;
+    --dorado: #b9935a;
+    --texto: #3a3a3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, var(--gris), var(--rosa));
+    font-family: 'Karla', Arial, sans-serif;
+    padding: 20px;
+  }
+  .card {
+    background: var(--blanco);
+    border-radius: 16px;
+    padding: 32px 28px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+  h1 { color: var(--dorado); font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: #888; font-size: 14px; margin-bottom: 24px; }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  button {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: var(--dorado);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  button:disabled { opacity: 0.6; }
+  #mensaje {
+    margin-top: 14px;
+    font-size: 14px;
+    color: #c0392b;
+    min-height: 18px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>📦 App-Repartos</h1>
+  <p class="sub">Inicia sesión para continuar</p>
+
+  <input type="email" id="email" placeholder="Correo electrónico" autocomplete="username">
+  <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password">
+  <button id="btnLogin">Iniciar sesión</button>
+  <div id="mensaje"></div>
+</div>
+
+<script>
+// ⚠️ PASO OBLIGATORIO: reemplaza este bloque por el firebaseConfig REAL
+// que ya tienes copiado en dashboard-repartidor.html o panel-admin.html
+// (es el mismo en los 3 archivos, cópialo tal cual de ahí).
+const firebaseConfig = {
+  apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
+  authDomain: "app-repartos-f3fda.firebaseapp.com",
+  projectId: "app-repartos-f3fda",
+  storageBucket: "app-repartos-f3fda.firebasestorage.app",
+  messagingSenderId: "831323740955",
+  appId: "1:831323740955:web:60d96b496aefb0047151be"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const btnLogin = document.getElementById('btnLogin');
+const mensaje = document.getElementById('mensaje');
+
+btnLogin.addEventListener('click', iniciarSesion);
+
+async function iniciarSesion() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  mensaje.textContent = '';
+
+  if (!email || !password) {
+    mensaje.textContent = 'Completa correo y contraseña.';
+    return;
+  }
+
+  btnLogin.disabled = true;
+  btnLogin.textContent = 'Verificando...';
+
+  try {
+    // 1. Verifica el correo y la contraseña contra Firebase Authentication
+    const cred = await auth.signInWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+
+    // 2. Busca el rol del usuario en la colección "usuarios"
+    //    Intenta primero por documento con ID = uid (recomendado a futuro)
+    let rol = null;
+    const porUid = await db.collection('usuarios').doc(uid).get();
+
+    if (porUid.exists) {
+      rol = porUid.data().rol;
+    } else {
+      // Respaldo: busca por campo "email" si el documento no usa el uid como ID
+      const porEmail = await db.collection('usuarios')
+        .where('email', '==', email).limit(1).get();
+      if (!porEmail.empty) {
+        rol = porEmail.docs[0].data().rol;
+      }
+    }
+
+    if (!rol) {
+      mensaje.textContent = 'Tu cuenta no tiene un rol asignado. Contacta al administrador.';
+      await auth.signOut();
+      btnLogin.disabled = false;
+      btnLogin.textContent = 'Iniciar sesión';
+      return;
+    }
+
+    // 3. Redirige según el rol
+    if (rol === 'admin') {
+      window.location.href = 'panel-admin.html';
+    } else {
+      window.location.href = 'dashboard-repartidor.html';
+    }
+
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      mensaje.textContent = 'Correo o contraseña incorrectos.';
+    } else {
+      mensaje.textContent = 'Error al iniciar sesión: ' + error.message;
+    }
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'Iniciar sesión';
+  }
+}
+
+// Enter para enviar el formulario
+document.getElementById('password').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') iniciarSesion();
+});
+</script>
+
+</body>
+</html>
