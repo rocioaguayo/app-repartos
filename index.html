@@ -2,13 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=login.html">
-    <title>Cargando...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8c6b3f">
+    <link rel="manifest" href="manifest.json">
+    <title>App Repartos</title>
     <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado', reg))
+                    .catch(err => console.error('Error en Service Worker', err));
+            });
+        }
         window.location.href = "login.html";
     </script>
 </head>
 <body>
-    <p>Redirigiendo a la página de inicio de sesión... Si no redirige automáticamente, <a href="login.html">haz clic aquí</a>.</p>
+    <p>Cargando App Repartos... <a href="login.html">Haz clic aquí si no redirige</a>.</p>
 </body>
 </html>
