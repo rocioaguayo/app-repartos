@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8c6b3f">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs Compatibles -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
@@ -22,7 +22,7 @@
         .input-group { margin-bottom: 15px; text-align: left; }
         .input-group input { width: 100%; padding: 14px 16px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 1rem; outline: none; }
         .btn-login { width: 100%; padding: 14px; background-color: #b58d59; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .error-msg { color: #d9534f; font-size: 0.85rem; margin-top: 10px; display: none; }
+        .error-msg { color: #d9534f; font-size: 0.85rem; margin-top: 12px; font-weight: 500; display: none; }
     </style>
 </head>
 <body>
@@ -31,64 +31,82 @@
         <div class="logo">📦 App-Repartos</div>
         <div class="subtitle">Inicia sesión para continuar</div>
 
-        <form id="loginForm">
-            <div class="input-group">
-                <input type="email" id="email" placeholder="Correo electrónico" required>
-            </div>
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Contraseña" required>
-            </div>
-            <button type="submit" class="btn-login" id="btnSubmit">Iniciar sesión</button>
-            <div id="errorMsg" class="error-msg">Correo o contraseña incorrectos.</div>
-        </form>
+        <!-- Quitamos la etiqueta <form> para evitar que la página se recargue sola -->
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Correo electrónico">
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Contraseña">
+        </div>
+        <button type="button" class="btn-login" id="btnSubmit" onclick="iniciarSesion()">Iniciar sesión</button>
+        
+        <div id="errorMsg" class="error-msg"></div>
     </div>
 
     <script>
-        const db = firebase.firestore();
-
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
+        async function iniciarSesion() {
             const emailInput = document.getElementById('email').value.trim();
             const passwordInput = document.getElementById('password').value.trim();
             const errorMsg = document.getElementById('errorMsg');
             const btnSubmit = document.getElementById('btnSubmit');
 
             errorMsg.style.display = 'none';
+            errorMsg.innerText = '';
+
+            if (!emailInput || !passwordInput) {
+                errorMsg.innerText = 'Por favor completa todos los campos.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
             btnSubmit.innerText = 'Verificando...';
+            btnSubmit.disabled = true;
 
             try {
-                // Buscar el usuario en la colección /usuarios por su email
+                // Verificar que Firebase esté inicializado
+                if (typeof firebase === 'undefined' || !firebase.apps.length) {
+                    throw new Error("Firebase no está configurado correctamente.");
+                }
+
+                const db = firebase.firestore();
+
+                // Consulta a Firestore
                 const snapshot = await db.collection('usuarios')
                     .where('email', '==', emailInput)
                     .where('clave', '==', passwordInput)
                     .get();
 
                 if (snapshot.empty) {
+                    errorMsg.innerText = 'Correo o contraseña incorrectos.';
                     errorMsg.style.display = 'block';
                     btnSubmit.innerText = 'Iniciar sesión';
+                    btnSubmit.disabled = false;
                 } else {
                     const userData = snapshot.docs[0].data();
                     
-                    // Guardar los datos del usuario en la sesión del navegador
+                    // Guardar datos en el almacenamiento local
                     localStorage.setItem('usuarioSesion', JSON.stringify(userData));
 
-                    // Redireccionar según el ROL
+                    // Redireccionar según el ROL guardado
                     if (userData.rol === 'admin') {
                         window.location.href = 'panel-admin.html';
                     } else if (userData.rol === 'repartidor') {
                         window.location.href = 'dashboard-repartidor.html';
                     } else {
-                        alert('Rol de usuario no válido');
+                        errorMsg.innerText = 'El usuario no tiene un rol válido asignado.';
+                        errorMsg.style.display = 'block';
                         btnSubmit.innerText = 'Iniciar sesión';
+                        btnSubmit.disabled = false;
                     }
                 }
             } catch (error) {
-                console.error("Error al iniciar sesión:", error);
-                alert("Ocurrió un error al conectar con la base de datos.");
+                console.error("Error de login:", error);
+                errorMsg.innerText = 'Error de conexión: ' + error.message;
+                errorMsg.style.display = 'block';
                 btnSubmit.innerText = 'Iniciar sesión';
+                btnSubmit.disabled = false;
             }
-        });
+        }
     </script>
 
 </body>
