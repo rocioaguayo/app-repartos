@@ -2,111 +2,33 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>App-Repartos | Iniciar Sesión</title>
     
-    <!-- Configuración PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8c6b3f">
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registrado correctamente', reg))
-            .catch(err => console.error('Error al registrar Service Worker', err));
-        });
-      }
-    </script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
 
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f3e9e1 0%, #e2cfc4 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-card {
-            background: #ffffff;
-            width: 100%;
-            max-width: 400px;
-            padding: 40px 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #8c6b3f;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .subtitle {
-            color: #888888;
-            font-size: 0.9rem;
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            border-color: #8c6b3f;
-            box-shadow: 0 0 0 3px rgba(140, 107, 63, 0.15);
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 14px;
-            background-color: #b58d59;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .btn-login:hover {
-            background-color: #9c7747;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #f3e9e1 0%, #e2cfc4 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: #ffffff; width: 100%; max-width: 380px; padding: 30px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #8c6b3f; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .subtitle { color: #888888; font-size: 0.9rem; margin-bottom: 25px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group input { width: 100%; padding: 14px 16px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 1rem; outline: none; }
+        .btn-login { width: 100%; padding: 14px; background-color: #b58d59; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .error-msg { color: #d9534f; font-size: 0.85rem; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="login-card">
-        <div class="logo">
-            📦 App-Repartos
-        </div>
+        <div class="logo">📦 App-Repartos</div>
         <div class="subtitle">Inicia sesión para continuar</div>
 
         <form id="loginForm">
@@ -116,15 +38,56 @@
             <div class="input-group">
                 <input type="password" id="password" placeholder="Contraseña" required>
             </div>
-            <button type="submit" class="btn-login">Iniciar sesión</button>
+            <button type="submit" class="btn-login" id="btnSubmit">Iniciar sesión</button>
+            <div id="errorMsg" class="error-msg">Correo o contraseña incorrectos.</div>
         </form>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const db = firebase.firestore();
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            // Redirección simple al panel de administración tras iniciar sesión
-            window.location.href = 'panel-admin.html';
+            
+            const emailInput = document.getElementById('email').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            errorMsg.style.display = 'none';
+            btnSubmit.innerText = 'Verificando...';
+
+            try {
+                // Buscar el usuario en la colección /usuarios por su email
+                const snapshot = await db.collection('usuarios')
+                    .where('email', '==', emailInput)
+                    .where('clave', '==', passwordInput)
+                    .get();
+
+                if (snapshot.empty) {
+                    errorMsg.style.display = 'block';
+                    btnSubmit.innerText = 'Iniciar sesión';
+                } else {
+                    const userData = snapshot.docs[0].data();
+                    
+                    // Guardar los datos del usuario en la sesión del navegador
+                    localStorage.setItem('usuarioSesion', JSON.stringify(userData));
+
+                    // Redireccionar según el ROL
+                    if (userData.rol === 'admin') {
+                        window.location.href = 'panel-admin.html';
+                    } else if (userData.rol === 'repartidor') {
+                        window.location.href = 'dashboard-repartidor.html';
+                    } else {
+                        alert('Rol de usuario no válido');
+                        btnSubmit.innerText = 'Iniciar sesión';
+                    }
+                }
+            } catch (error) {
+                console.error("Error al iniciar sesión:", error);
+                alert("Ocurrió un error al conectar con la base de datos.");
+                btnSubmit.innerText = 'Iniciar sesión';
+            }
         });
     </script>
 
