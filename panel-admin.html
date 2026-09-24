@@ -1,14 +1,3 @@
-// CONTROL DE ACCESO
-const sesionGuardada = localStorage.getItem('usuarioSesion');
-if (!sesionGuardada) {
-    window.location.href = 'login.html';
-} else {
-    const usuario = JSON.parse(sesionGuardada);
-    if (usuario.rol !== 'admin') {
-        alert('Acceso denegado: No tienes permisos de administración.');
-        window.location.href = 'dashboard-repartidor.html';
-    }
-}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -59,7 +48,7 @@ if (!sesionGuardada) {
         </div>
     </header>
 
-    <div class="stats-bar" id="statsBar">Cargando métricas...</div>
+    <div class="stats-bar" id="statsBar">Cargando datos...</div>
 
     <div class="tabs">
         <button class="tab-btn active">Pedidos</button>
@@ -68,10 +57,10 @@ if (!sesionGuardada) {
         <button class="tab-btn">Repartidores</button>
     </div>
 
-    <div id="pedidosContainer">Cargando base de datos de pedidos...</div>
+    <div id="pedidosContainer">Cargando base de datos...</div>
 
     <script>
-        // 1. SEGURIDAD: VERIFICACIÓN RIGUROSA DE ROL ADMINISTRADOR
+        // 1. CONTROL DE ACCESO POR ROL (AQUÍ DENTRO DE SCRIPT)
         const sesionGuardada = localStorage.getItem('usuarioSesion');
         if (!sesionGuardada) {
             window.location.href = 'login.html';
@@ -83,14 +72,11 @@ if (!sesionGuardada) {
             }
         }
 
-        // 2. CONFIGURACIÓN FIREBASE (REEMPLAZA CON TUS CREDENCIALES REALES)
+        // 2. CONFIGURACIÓN FIREBASE
         const firebaseConfig = {
-            apiKey: "PEGA_AQUI_TU_API_KEY",
             authDomain: "app-repartos-f3fda.firebaseapp.com",
             projectId: "app-repartos-f3fda",
-            storageBucket: "app-repartos-f3fda.appspot.com",
-            messagingSenderId: "PEGA_AQUI_TU_MESSAGING_SENDER_ID",
-            appId: "PEGA_AQUI_TU_APP_ID"
+            storageBucket: "app-repartos-f3fda.appspot.com"
         };
 
         if (!firebase.apps.length) {
@@ -98,7 +84,7 @@ if (!sesionGuardada) {
         }
         const db = firebase.firestore();
 
-        // 3. OBTENER Y MOSTRAR TODOS LOS PEDIDOS
+        // 3. OBTENER PEDIDOS
         db.collection('pedidos').onSnapshot((snapshot) => {
             const container = document.getElementById('pedidosContainer');
             const statsBar = document.getElementById('statsBar');
@@ -134,7 +120,7 @@ if (!sesionGuardada) {
             });
         }, (error) => {
             console.error("Error al cargar pedidos:", error);
-            document.getElementById('pedidosContainer').innerHTML = '<p style="color:red; text-align:center;">Error al conectar con Firestore. Revisa las credenciales.</p>';
+            document.getElementById('pedidosContainer').innerHTML = '<p style="color:red; text-align:center;">Error al conectar con Firestore.</p>';
         });
 
         function cerrarSesion() {
