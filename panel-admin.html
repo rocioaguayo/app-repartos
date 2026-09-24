@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8c6b3f">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -17,25 +17,50 @@
         body { background-color: #f4f5f7; color: #333; padding: 15px; }
         header { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h1 { font-size: 1.2rem; color: #8c6b3f; display: flex; align-items: center; gap: 8px; }
+        .nav-actions { display: flex; gap: 10px; align-items: center; }
         .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
-        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; float: right; }
+        .btn-dash { background: #8c6b3f; color: white; text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-size: 0.85rem; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 5px; }
+        .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: bold; color: #666; cursor: pointer; border-radius: 6px; }
+        .tab-btn.active { background: #8c6b3f; color: white; }
+
+        .stats-bar { background: white; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; color: #555; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+
+        .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.04); position: relative; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; position: absolute; top: 16px; right: 16px; }
         .Entregado { background: #e8f8f5; color: #27ae60; }
         .Devuelto { background: #fef9e7; color: #f39c12; }
         .No-entregado { background: #fadbd8; color: #c0392b; }
+        
+        .card-title { font-size: 1rem; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .card-info { font-size: 0.88rem; color: #666; line-height: 1.5; }
+        .btn-edit { display: block; width: 100%; text-align: center; margin-top: 12px; background: #f0f0f0; border: none; padding: 8px; border-radius: 6px; font-weight: bold; color: #444; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>⚙️ Administración</h1>
-        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        <div class="nav-actions">
+            <a href="dashboard-repartidor.html" class="btn-dash">← Dashboard</a>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
     </header>
 
-    <div id="pedidosContainer">Cargando todos los pedidos...</div>
+    <div class="stats-bar" id="statsBar">Cargando métricas...</div>
+
+    <div class="tabs">
+        <button class="tab-btn active">Pedidos</button>
+        <button class="tab-btn">Clientes</button>
+        <button class="tab-btn">Vendedores</button>
+        <button class="tab-btn">Repartidores</button>
+    </div>
+
+    <div id="pedidosContainer">Cargando base de datos de pedidos...</div>
 
     <script>
-        // 1. CONTROL DE ACCESO RIGUROSO POR ROL
+        // 1. SEGURIDAD: VERIFICACIÓN RIGUROSA DE ROL ADMINISTRADOR
         const sesionGuardada = localStorage.getItem('usuarioSesion');
         if (!sesionGuardada) {
             window.location.href = 'login.html';
@@ -47,14 +72,14 @@
             }
         }
 
-        // Configuración Firebase (Reemplaza con tus llaves exactas)
+        // 2. CONFIGURACIÓN FIREBASE (REEMPLAZA CON TUS CREDENCIALES REALES)
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
+            apiKey: "PEGA_AQUI_TU_API_KEY",
             authDomain: "app-repartos-f3fda.firebaseapp.com",
             projectId: "app-repartos-f3fda",
             storageBucket: "app-repartos-f3fda.appspot.com",
-            messagingSenderId: "TU_SENDER_ID",
-            appId: "TU_APP_ID"
+            messagingSenderId: "PEGA_AQUI_TU_MESSAGING_SENDER_ID",
+            appId: "PEGA_AQUI_TU_APP_ID"
         };
 
         if (!firebase.apps.length) {
@@ -62,29 +87,43 @@
         }
         const db = firebase.firestore();
 
-        // Cargar TODOS los pedidos del sistema
+        // 3. OBTENER Y MOSTRAR TODOS LOS PEDIDOS
         db.collection('pedidos').onSnapshot((snapshot) => {
             const container = document.getElementById('pedidosContainer');
+            const statsBar = document.getElementById('statsBar');
             container.innerHTML = '';
 
             if (snapshot.empty) {
-                container.innerHTML = '<p>No hay pedidos registrados.</p>';
+                container.innerHTML = '<p style="text-align:center; padding: 20px;">No hay pedidos registrados en el sistema.</p>';
+                statsBar.innerText = 'Conectado. 0 pedidos registrados.';
                 return;
             }
 
+            let totalPedidos = snapshot.size;
+            statsBar.innerText = `Conectado. ${totalPedidos} pedido(s) en total.`;
+
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                const estadoClass = (data.estado || 'No-entregado').replace(/\s+/g, '-');
+                const estado = data.estado || 'No entregado';
+                const estadoClass = estado.replace(/\s+/g, '-');
+
                 container.innerHTML += `
                     <div class="card">
-                        <span class="badge ${estadoClass}">${data.estado || 'Pendiente'}</span>
-                        <strong>📦 Ord: ${doc.id}</strong><br>
-                        <small>📍 Dirección: ${data.direccion || 'Sin dirección'}</small><br>
-                        <small>👤 Cliente: ${data.cliente || 'N/A'}</small><br>
-                        <small>🚚 Repartidor: ${data.repartidor || 'Sin asignar'}</small>
+                        <span class="badge ${estadoClass}">${estado}</span>
+                        <div class="card-title">📦 ${doc.id}</div>
+                        <div class="card-info">
+                            <strong>Dirección:</strong> ${data.direccion || 'Sin dirección'}<br>
+                            <strong>Cliente:</strong> ${data.cliente || 'N/A'}<br>
+                            <strong>Vendedor:</strong> ${data.vendedor || 'N/A'}<br>
+                            <strong>Repartidor:</strong> ${data.repartidor || 'Sin asignar'}
+                        </div>
+                        <button class="btn-edit" onclick="alert('Editar pedido ${doc.id}')">Editar</button>
                     </div>
                 `;
             });
+        }, (error) => {
+            console.error("Error al cargar pedidos:", error);
+            document.getElementById('pedidosContainer').innerHTML = '<p style="color:red; text-align:center;">Error al conectar con Firestore. Revisa las credenciales.</p>';
         });
 
         function cerrarSesion() {
