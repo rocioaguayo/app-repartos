@@ -8,10 +8,9 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8c6b3f">
 
-    <!-- Firebase SDKs Compatibles -->
+    <!-- SDKs Compatibles de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -31,7 +30,6 @@
         <div class="logo">📦 App-Repartos</div>
         <div class="subtitle">Inicia sesión para continuar</div>
 
-        <!-- Quitamos la etiqueta <form> para evitar que la página se recargue sola -->
         <div class="input-group">
             <input type="email" id="email" placeholder="Correo electrónico">
         </div>
@@ -44,6 +42,24 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN DIRECTA DE FIREBASE
+        // Reemplaza los datos de abajo con las llaves de tu proyecto en la consola de Firebase
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "app-repartos-f3fda.firebaseapp.com",
+            projectId: "app-repartos-f3fda",
+            storageBucket: "app-repartos-f3fda.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        // Inicializar Firebase solo si no se ha hecho previamente
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+
         async function iniciarSesion() {
             const emailInput = document.getElementById('email').value.trim();
             const passwordInput = document.getElementById('password').value.trim();
@@ -63,14 +79,7 @@
             btnSubmit.disabled = true;
 
             try {
-                // Verificar que Firebase esté inicializado
-                if (typeof firebase === 'undefined' || !firebase.apps.length) {
-                    throw new Error("Firebase no está configurado correctamente.");
-                }
-
-                const db = firebase.firestore();
-
-                // Consulta a Firestore
+                // Consulta a la colección /usuarios
                 const snapshot = await db.collection('usuarios')
                     .where('email', '==', emailInput)
                     .where('clave', '==', passwordInput)
@@ -84,10 +93,10 @@
                 } else {
                     const userData = snapshot.docs[0].data();
                     
-                    // Guardar datos en el almacenamiento local
+                    // Guardar los datos en el almacenamiento local de la sesión
                     localStorage.setItem('usuarioSesion', JSON.stringify(userData));
 
-                    // Redireccionar según el ROL guardado
+                    // Redirección condicional por ROL
                     if (userData.rol === 'admin') {
                         window.location.href = 'panel-admin.html';
                     } else if (userData.rol === 'repartidor') {
@@ -101,7 +110,7 @@
                 }
             } catch (error) {
                 console.error("Error de login:", error);
-                errorMsg.innerText = 'Error de conexión: ' + error.message;
+                errorMsg.innerText = 'Error de conexión con la base de datos.';
                 errorMsg.style.display = 'block';
                 btnSubmit.innerText = 'Iniciar sesión';
                 btnSubmit.disabled = false;
