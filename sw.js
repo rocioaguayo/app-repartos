@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-repartos-v1';
+const CACHE_NAME = 'app-repartos-v2';
 const urlsToCache = [
   './',
   './index.html',
