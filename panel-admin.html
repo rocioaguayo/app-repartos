@@ -1,22 +1,3 @@
-// Validar autenticación
-const usuarioSesion = JSON.parse(localStorage.getItem('usuarioSesion'));
-
-if (!usuarioSesion) {
-    window.location.href = 'login.html';
-} else {
-    // Verificar rol directamente en base de datos para mayor seguridad
-    db.collection('usuarios').doc(usuarioSesion.uid).get().then((doc) => {
-        if (!doc.exists || doc.data().rol !== 'admin') {
-            alert('Acceso restringido. Redirigiendo a tu panel asignado...');
-            window.location.href = 'dashboard-repartidor.html';
-        } else {
-            // Cargar dashboard administrativo completo
-            cargarPanelAdmin();
-        }
-    }).catch(() => {
-        window.location.href = 'login.html';
-    });
-}
 <!DOCTYPE html>
 <html lang="es">
 <head>
