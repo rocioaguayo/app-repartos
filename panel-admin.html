@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Librería HTML5-QRcode para la cámara -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <style>
 :root {
 --bg: #faf7f4; --surface: #ffffff; --surface-alt: #f2ece6; --border: #e9e0d8;
@@ -38,21 +40,22 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 .badge.devuelto { background: var(--back-soft); color: var(--back); }
 .btn-editar { margin-top: 10px; width: 100%; padding: 9px; background: var(--surface-alt); color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; }
 .vacio { text-align: center; color: var(--text-soft); font-size: 13px; padding: 30px 0; }
-.fab { position: fixed; right: 20px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--gold-deep); color: #fff; border: none; font-size: 26px; box-shadow: 0 4px 14px rgba(143,111,63,0.4); z-index: 10; }
+.fab { position: fixed; right: 20px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--gold-deep); color: #fff; border: none; font-size: 26px; box-shadow: 0 4px 14px rgba(143,111,63,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; }
+.fab-camara { right: 88px; background: var(--gold); font-size: 22px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(47,43,40,0.55); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
 .modal-overlay.oculto { display: none; }
 .modal-caja { background: var(--surface); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
 @media (min-width: 540px) { .modal-overlay { align-items: center; } .modal-caja { border-radius: 18px; } }
 .modal-caja h3 { font-family: 'Fraunces', serif; font-weight: 600; margin: 0 0 14px 0; font-size: 17px; display: flex; justify-content: space-between; align-items: center; }
-.btn-cerrar { background: var(--surface-alt); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; color: var(--text-soft); }
+.btn-cerrar { background: var(--surface-alt); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; color: var(--text-soft); cursor: pointer; }
 .campo-form { margin-bottom: 14px; }
 .campo-form label { display: block; font-size: 12px; color: var(--text-soft); margin-bottom: 6px; font-weight: 700; }
 .campo-form input, .campo-form select, .campo-form textarea { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); }
 .campo-form textarea { min-height: 70px; resize: vertical; }
-.btn-guardar { width: 100%; padding: 13px; background: var(--gold-deep); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 6px; }
-.btn-eliminar { width: 100%; padding: 13px; background: var(--fail-soft); color: var(--fail); border: none; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 10px; }
+.btn-guardar { width: 100%; padding: 13px; background: var(--gold-deep); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 6px; cursor: pointer; }
+.btn-eliminar { width: 100%; padding: 13px; background: var(--fail-soft); color: var(--fail); border: none; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 10px; cursor: pointer; }
 .btn-eliminar.oculto { display: none; }
-.btn-texto { width: 100%; background: none; border: none; color: var(--text-soft); font-size: 13px; padding: 10px; font-family: inherit; margin-top: 4px; }
+.btn-texto { width: 100%; background: none; border: none; color: var(--text-soft); font-size: 13px; padding: 10px; font-family: inherit; margin-top: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -73,8 +76,21 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 <div id="listaRegistros"></div>
 </div>
 
-<button class="fab" id="btnAgregar">+</button>
+<!-- Botones flotantes: Escáner (📷) y Agregar manual (+) -->
+<button class="fab fab-camara" id="btnAbrirEscaner" title="Escanear paquete">📷</button>
+<button class="fab" id="btnAgregar" title="Agregar manual">+</button>
 
+<!-- Modal del Escáner de Recepción -->
+<div id="modalEscanerAdmin" class="modal-overlay oculto">
+<div class="modal-caja" style="text-align: center;">
+<h3>Escaner de Recepción <button class="btn-cerrar" id="cerrarEscanerAdmin">✕</button></h3>
+<p style="font-size: 13px; color: var(--text-soft); margin-bottom: 12px;">Apunta la cámara al código de la etiqueta.</p>
+<div id="reader-admin" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000;"></div>
+<button class="btn-eliminar" id="btnDetenerEscaner" style="margin-top: 15px;">Cerrar Cámara</button>
+</div>
+</div>
+
+<!-- Modal de Formulario Estándar -->
 <div id="modalForm" class="modal-overlay oculto">
 <div class="modal-caja">
 <h3><span id="tituloForm">Agregar</span><button class="btn-cerrar" id="cerrarForm">✕</button></h3>
@@ -115,7 +131,6 @@ no_entregado: "No entregado",
 devuelto: "Devuelto"
 };
 
-// ---------- Configuración de cada tipo de entidad ----------
 var configEntidades = {
 clientes: {
 coleccion: "Clientes",
@@ -181,7 +196,6 @@ document.getElementById("estadoConexion").textContent = "Error al conectar (" + 
 });
 }
 
-// ---------- Sesión: solo entra un usuario con rol admin ----------
 auth.onAuthStateChanged(function(u) {
 if (!u) { location.href = "login.html"; return; }
 db.collection("usuarios").doc(u.uid).get().then(function(d) {
@@ -204,7 +218,6 @@ e.preventDefault();
 auth.signOut().then(function() { location.href = "login.html"; });
 });
 
-// ---------- Tabs ----------
 document.querySelectorAll(".tabs button").forEach(function(btn) {
 btn.addEventListener("click", function() {
 document.querySelectorAll(".tabs button").forEach(function(b) { b.classList.remove("activo"); });
@@ -214,13 +227,12 @@ renderLista();
 });
 });
 
-// ---------- Render de la lista ----------
 function renderLista() {
 var contenedor = document.getElementById("listaRegistros");
 var registros = cache[tipoActivo];
 contenedor.innerHTML = "";
 if (!registros || registros.length === 0) {
-contenedor.innerHTML = "<div class='vacio'>Todavía no hay " + tipoActivo + ". Toca + para agregar el primero.</div>";
+contenedor.innerHTML = "<div class='vacio'>Todavía no hay " + tipoActivo + ". Toca + o la cámara para agregar el primero.</div>";
 return;
 }
 registros.forEach(function(item) {
@@ -264,7 +276,71 @@ if (!id) return null;
 return cache[tipo].find(function(it) { return it.id === id; }) || null;
 }
 
-// ---------- Formulario (agregar / editar) ----------
+// --- LÓGICA DE ESCÁNER DE CÁMARA (ADMIN) ---
+var html5QrCodeAdmin = null;
+
+document.getElementById("btnAbrirEscaner").addEventListener("click", function() {
+document.getElementById("modalEscanerAdmin").classList.remove("oculto");
+iniciarCamaraAdmin();
+});
+
+document.getElementById("cerrarEscanerAdmin").addEventListener("click", detenerYCerrarEscaner);
+document.getElementById("btnDetenerEscaner").addEventListener("click", detenerYCerrarEscaner);
+
+function iniciarCamaraAdmin() {
+setTimeout(function() {
+if (!window.Html5Qrcode) {
+alert("Cargando librería de escáner, intenta de nuevo en un segundo.");
+return;
+}
+if (!html5QrCodeAdmin) {
+html5QrCodeAdmin = new Html5Qrcode("reader-admin");
+}
+html5QrCodeAdmin.start(
+{ facingMode: "environment" },
+{ fps: 10, qrbox: { width: 250, height: 150 } },
+function(decodedText) {
+detenerYCerrarEscaner();
+procesarCodigoEscaneadoAdmin(decodedText);
+},
+function(errorMessage) {}
+).catch(function(err) {
+alert("No se pudo iniciar la cámara: " + err);
+});
+}, 300);
+}
+
+function detenerYCerrarEscaner() {
+if (html5QrCodeAdmin && html5QrCodeAdmin.isScanning) {
+html5QrCodeAdmin.stop().then(function() {
+document.getElementById("modalEscanerAdmin").classList.add("oculto");
+}).catch(function(err) {
+document.getElementById("modalEscanerAdmin").classList.add("oculto");
+});
+} else {
+document.getElementById("modalEscanerAdmin").classList.add("oculto");
+}
+}
+
+function procesarCodigoEscaneadoAdmin(codigo) {
+var existe = cache.pedidos.some(function(p) { return p.id === codigo || p.data.codigo_barra === codigo; });
+if (existe) {
+alert("⚠️ El paquete con código " + codigo + " ya se encuentra registrado.");
+return;
+}
+db.collection("Pedidos").doc(codigo).set({
+codigo_barra: codigo,
+estado: "pendiente",
+fecha_recepcion: firebase.firestore.FieldValue.serverTimestamp(),
+creado_por: "Administrador (Escáner)"
+}).then(function() {
+alert("✅ ¡Paquete " + codigo + " registrado con éxito!");
+}).catch(function(err) {
+alert("Error al registrar el paquete: " + err.message);
+});
+}
+
+// --- FORMULARIO MANUAL ---
 var modalForm = document.getElementById("modalForm");
 document.getElementById("btnAgregar").addEventListener("click", function() { abrirForm(null); });
 
@@ -336,8 +412,6 @@ if (faltaObligatorio) {
 alert("Completa los campos obligatorios antes de guardar.");
 return;
 }
-// Para pedidos: guardamos también nombre y teléfono del cliente/vendedor/repartidor
-// para que el dashboard y los avisos de WhatsApp no dependan de otra consulta.
 if (tipoActivo === "pedidos") {
 var cliente = buscarPorId("clientes", datosGuardar.cliente_id);
 var vendedor = buscarPorId("vendedores", datosGuardar.vendedor_id);
