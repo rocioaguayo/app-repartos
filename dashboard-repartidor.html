@@ -84,7 +84,8 @@ function pintar(snap) {
     var mapa = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.direccion_entrega || "");
     var div = document.createElement("div");
     div.className = "pedido";
-    div.setAttribute("data-cod", String(p.codigo_barra || ""));
+    div.setAttribute("data-cod", String(p.codigo_barra || doc.id));
+    div.setAttribute("data-docid", doc.id);
     div.innerHTML =
       "<div class='top'><span class='cod'>📦 " + esc(p.codigo_barra || doc.id) + "</span><span class='badge " + esc(est) + "'>" + esc(estados[est] || est) + "</span></div>" +
       "<div class='det'>Cliente: " + esc(p.cliente_nombre || "-") + "</div>" +
@@ -121,17 +122,46 @@ function cerrarEscaner() {
   var q = qr; qr = null;
   return q.stop().then(function () { q.clear(); }).catch(function () {});
 }
-function encontrar(cod) {
+function encontrar(codCrudo) {
+  // Limpiar el texto largo del QR si viene con formato complejo (ej: 13113;...)
+  var cod = codCrudo.includes(";") ? codCrudo.split(";")[0].trim() : codCrudo.trim();
+
   var hallado = null;
-  lista.querySelectorAll(".pedido").forEach(function (c) { if (c.getAttribute("data-cod") === cod) hallado = c; });
-  if (!hallado) { alert("La etiqueta " + cod + " no está entre tus pedidos asignados."); return; }
+  var docIdReal = null;
+  lista.querySelectorAll(".pedido").forEach(function (c) { 
+    if (c.getAttribute("data-cod") === cod || c.getAttribute("data-docid") === cod) { 
+      hallado = c; 
+      docIdReal = c.getAttribute("data-docid");
+    } 
+  });
+
+  if (!hallado) { 
+    alert("⚠️ La etiqueta " + cod + " no está entre tus pedidos asignados."); 
+    return; 
+  }
+
   hallado.scrollIntoView({ behavior: "smooth", block: "center" });
   hallado.style.outline = "3px solid #b9935a";
   setTimeout(function () { hallado.style.outline = ""; }, 4000);
+
   var sel = hallado.querySelector("select");
-  if (sel && sel.value === "pendiente" && confirm("Pedido " + cod + " encontrado. ¿Marcarlo como En camino?")) {
-    sel.value = "en_camino";
-    sel.dispatchEvent(new Event("change"));
+  if (sel) {
+    if (sel.value === "entregado") {
+      alert("ℹ️ Este paquete ya figura como ENTREGADO.");
+      return;
+    }
+
+    if (confirm("📦 Pedido " + cod + " encontrado. ¿Marcarlo como ENTREGADO con fecha y hora actual?")) {
+      db.collection("Pedidos").doc(docIdReal).update({
+        estado: "entregado",
+        fecha_entrega: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        sel.value = "entregado";
+        alert("✅ ¡Entrega registrada con éxito!");
+      }).catch(function(e) {
+        alert("No se pudo actualizar el estado: " + e.message);
+      });
+    }
   }
 }
 document.getElementById("btnEscanear").addEventListener("click", abrirEscaner);
