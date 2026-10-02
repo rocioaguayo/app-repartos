@@ -3,19 +3,19 @@
   "name": "App Repartos",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2830/2830305.png",
+      "src": "icon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2830/2830305.png",
+      "src": "icon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": "./index.html",
-  "background_color": "#ffffff",
-  "theme_color": "#8c6b3f",
+  "start_url": "./login.html",
+  "background_color": "#021A32",
+  "theme_color": "#021A32",
   "display": "standalone",
   "orientation": "portrait"
 }
