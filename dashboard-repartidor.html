@@ -84,7 +84,7 @@ function pintar(snap) {
     var mapa = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.direccion_entrega || "");
     var div = document.createElement("div");
     div.className = "pedido";
-    div.setAttribute("data-cod", String(p.codigo_barra || doc.id));
+    div.setAttribute("data-cod", String(p.codigo_barra || ""));
     div.setAttribute("data-docid", doc.id);
     div.innerHTML =
       "<div class='top'><span class='cod'>📦 " + esc(p.codigo_barra || doc.id) + "</span><span class='badge " + esc(est) + "'>" + esc(estados[est] || est) + "</span></div>" +
@@ -122,21 +122,24 @@ function cerrarEscaner() {
   var q = qr; qr = null;
   return q.stop().then(function () { q.clear(); }).catch(function () {});
 }
-function encontrar(codCrudo) {
-  // Limpiar el texto largo del QR si viene con formato complejo (ej: 13113;...)
-  var cod = codCrudo.includes(";") ? codCrudo.split(";")[0].trim() : codCrudo.trim();
 
+function encontrar(codCrudo) {
+  var codLeido = codCrudo.trim();
   var hallado = null;
   var docIdReal = null;
+
   lista.querySelectorAll(".pedido").forEach(function (c) { 
-    if (c.getAttribute("data-cod") === cod || c.getAttribute("data-docid") === cod) { 
+    var codPedido = c.getAttribute("data-cod");
+    var docId = c.getAttribute("data-docid");
+
+    if (codLeido.includes(codPedido) || codPedido.includes(codLeido) || docId === codLeido) { 
       hallado = c; 
-      docIdReal = c.getAttribute("data-docid");
+      docIdReal = docId;
     } 
   });
 
   if (!hallado) { 
-    alert("⚠️ La etiqueta " + cod + " no está entre tus pedidos asignados."); 
+    alert("⚠️ La etiqueta leída no coincide con tus pedidos asignados."); 
     return; 
   }
 
@@ -151,19 +154,18 @@ function encontrar(codCrudo) {
       return;
     }
 
-    if (confirm("📦 Pedido " + cod + " encontrado. ¿Marcarlo como ENTREGADO con fecha y hora actual?")) {
-      db.collection("Pedidos").doc(docIdReal).update({
-        estado: "entregado",
-        fecha_entrega: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(function() {
-        sel.value = "entregado";
-        alert("✅ ¡Entrega registrada con éxito!");
-      }).catch(function(e) {
-        alert("No se pudo actualizar el estado: " + e.message);
-      });
-    }
+    db.collection("Pedidos").doc(docIdReal).update({
+      estado: "entregado",
+      fecha_entrega: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function() {
+      sel.value = "entregado";
+      alert("✅ ¡Paquete entregado registrado con éxito!");
+    }).catch(function(e) {
+      alert("No se pudo actualizar el estado: " + e.message);
+    });
   }
 }
+
 document.getElementById("btnEscanear").addEventListener("click", abrirEscaner);
 document.getElementById("cerrarEscaner").addEventListener("click", cerrarEscaner);
 </script>
