@@ -1,0 +1,83 @@
+rules_version = '2';
+// Reglas App Repartos — versión corregida (fase 0).
+// Compatibles con las pantallas actuales: no requieren cambiar el código para desplegarse.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Perfil y roles ----------
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function activo() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && perfil().get('activo', true) != false;
+    }
+    function esAdmin() { return activo() && perfil().get('rol', '') == 'admin'; }
+    function esRepartidor() { return activo() && perfil().get('rol', '') == 'repartidor'; }
+    function esSuyo() {
+      return esRepartidor() && resource.data.repartidor_id == perfil().repartidorId;
+    }
+
+    // ---------- Validaciones de pedidos ----------
+    function estados() { return ['pendiente', 'en_camino', 'entregado', 'no_entregado', 'devuelto']; }
+
+    function textoOpcional(d, campo, max) {
+      return !(campo in d) || (d[campo] is string && d[campo].size() <= max);
+    }
+
+    // Formato válido de un pedido (lo que escribe el admin).
+    function pedidoValido(d) {
+      return d.codigo_barra is string
+        && d.codigo_barra.size() > 0 && d.codigo_barra.size() <= 100
+        && d.estado in estados()
+        && textoOpcional(d, 'direccion_entrega', 300)
+        && textoOpcional(d, 'cliente_nombre', 120)
+        && textoOpcional(d, 'cliente_telefono', 30)
+        && textoOpcional(d, 'vendedor_nombre', 120)
+        && textoOpcional(d, 'vendedor_telefono', 30)
+        && textoOpcional(d, 'repartidor_nombre', 120)
+        && textoOpcional(d, 'repartidor_id', 128);
+    }
+
+    // Cambios de estado que puede hacer un repartidor.
+    // "entregado" y "devuelto" son finales: solo el admin puede corregirlos.
+    function transicionRepartidor(desde, hacia) {
+      return (desde == 'pendiente'    && hacia in ['en_camino', 'entregado', 'no_entregado'])
+          || (desde == 'en_camino'    && hacia in ['entregado', 'no_entregado'])
+          || (desde == 'no_entregado' && hacia in ['en_camino', 'entregado', 'devuelto']);
+    }
+
+    function updateRepartidorValido() {
+      let cambios = request.resource.data.diff(resource.data).affectedKeys();
+      let nuevo = request.resource.data;
+      return cambios.hasOnly(['estado', 'fecha_entrega'])
+        && cambios.hasAny(['estado'])
+        && transicionRepartidor(resource.data.get('estado', 'pendiente'), nuevo.estado)
+        // fecha_entrega solo con hora del servidor y solo al entregar
+        && (!cambios.hasAny(['fecha_entrega'])
+            || (nuevo.estado == 'entregado' && nuevo.fecha_entrega == request.time));
+    }
+
+    // ---------- Colecciones ----------
+    // Cada persona lee solo su perfil. Los perfiles se crean desde la consola de Firebase.
+    match /usuarios/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || esAdmin());
+      allow write: if false;
+    }
+
+    match /Pedidos/{id} {
+      allow read: if esAdmin() || esSuyo();
+      allow create: if esAdmin() && pedidoValido(request.resource.data);
+      allow update: if (esAdmin() && pedidoValido(request.resource.data))
+                    || (esSuyo() && updateRepartidorValido());
+      allow delete: if esAdmin();
+    }
+
+    match /Clientes/{id}     { allow read, write: if esAdmin(); }
+    match /Vendedores/{id}   { allow read, write: if esAdmin(); }
+    match /repartidores/{id} { allow read, write: if esAdmin(); }
+
+    // Todo lo demás queda cerrado (comportamiento por defecto de Firestore).
+  }
+}
