@@ -179,21 +179,6 @@
     #error:not(:empty) {
       display: block;
     }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-slate);
-      font-size: 13px;
-      text-decoration: none;
-      margin-top: 20px;
-      transition: color 0.2s;
-    }
-
-    .back-link:hover {
-      color: var(--orange-brand);
-    }
   </style>
 </head>
 <body>
@@ -226,10 +211,6 @@
   </button>
 
   <div id="error" role="alert"></div>
-
-  <a href="pagina-web.html" class="back-link">
-    <i data-lucide="arrow-left" size="14"></i> Volver a la página principal
-  </a>
 </div>
 
 <script>
