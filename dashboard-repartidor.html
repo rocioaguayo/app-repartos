@@ -5,42 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>App-Repartos | Mi ruta</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#b9935a">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Karla:wght@400;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0b192c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Karla',Arial,sans-serif;background:#faf7f4;color:#2f2b28;padding-bottom:40px}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#fff;border-bottom:1px solid #e9e0d8;position:sticky;top:0}
-header h1{font-family:'Fraunces',serif;font-size:17px;color:#8f6f3f}
-header button{background:#f2ece6;border:none;border-radius:20px;padding:7px 14px;font:700 12px Karla,sans-serif;color:#8c8177}
-main{max-width:560px;margin:0 auto;padding:16px}
-.pedido{background:#fff;border:1px solid #e9e0d8;border-radius:14px;padding:14px;margin-bottom:12px}
-.top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}
-.cod{font-weight:700}
-.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;height:fit-content}
-.pendiente{background:#f1e4cd;color:#8f6f3f}.en_camino{background:#f7e4e9;color:#b96780}
-.entregado{background:#e6ede4;color:#6f8f6a}.no_entregado{background:#f3e2e1;color:#b1615f}.devuelto{background:#efe7dd;color:#a08b76}
-.det{font-size:13px;color:#8c8177;margin-top:3px}
-.enlaces{display:flex;gap:8px;margin:12px 0 8px}
-.enlaces a{flex:1;text-align:center;padding:10px;border-radius:10px;background:#f2ece6;color:#2f2b28;font-size:13px;font-weight:700;text-decoration:none}
-select{width:100%;padding:11px;border:1px solid #e9e0d8;border-radius:10px;font:14px Karla,sans-serif;background:#faf7f4}
-.msg{text-align:center;color:#8c8177;font-size:14px;padding:30px 0}
-.fab{position:fixed;right:18px;bottom:22px;background:#8f6f3f;color:#fff;border:none;border-radius:28px;padding:15px 20px;font:700 14px Karla,sans-serif;box-shadow:0 4px 14px rgba(143,111,63,.4)}
-#escaner{display:none;position:fixed;inset:0;background:rgba(47,43,40,.9);z-index:50;flex-direction:column;align-items:center;justify-content:center;padding:16px}
-#escaner p{color:#fff;font-size:14px;margin-bottom:12px;text-align:center}
-#lector{width:100%;max-width:420px;background:#000;border-radius:14px;overflow:hidden}
-#escaner button{margin-top:14px;padding:12px 28px;border:none;border-radius:12px;background:#f2ece6;font:700 14px Karla,sans-serif;color:#2f2b28}
+:root {
+  --bg: #0b192c;
+  --surface: #1e3e62;
+  --surface-alt: #172554;
+  --border: rgba(255, 255, 255, 0.15);
+  --text: #ffffff;
+  --text-soft: #cbd5e1;
+  --orange: #ff6500;
+  --orange-hover: #e05500;
+  --orange-soft: rgba(255, 101, 0, 0.2);
+  --blue: #3b82f6;
+  --blue-soft: rgba(59, 130, 246, 0.2);
+  --green: #10b981;
+  --green-soft: rgba(16, 185, 129, 0.2);
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.2);
+  --purple: #8b5cf6;
+  --purple-soft: rgba(139, 92, 246, 0.2);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 90px; line-height: 1.5; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(11, 25, 44, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+header .brand-box { display: flex; align-items: center; gap: 10px; }
+header .brand-logo { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; border: 2px solid var(--orange); }
+header h1 { font-size: 16px; font-weight: 800; color: var(--text); text-transform: uppercase; }
+header button { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 20px; padding: 8px 16px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--text-soft); cursor: pointer; }
+header button:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+main { max-width: 560px; margin: 0 auto; padding: 16px; }
+.pedido { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; align-items: flex-start; }
+.cod { font-weight: 800; font-size: 15px; color: var(--text); }
+.badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; height: fit-content; }
+.pendiente { background: var(--orange-soft); color: #f59e0b; border: 1px solid #f59e0b; }
+.en_camino { background: var(--blue-soft); color: var(--blue); border: 1px solid var(--blue); }
+.entregado { background: var(--green-soft); color: var(--green); border: 1px solid var(--green); }
+.no_entregado { background: var(--red-soft); color: var(--red); border: 1px solid var(--red); }
+.devuelto { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple); }
+.det { font-size: 13px; color: var(--text-soft); margin-top: 4px; }
+.enlaces { display: flex; gap: 8px; margin: 14px 0 10px; flex-wrap: wrap; }
+.enlaces a { flex: 1; text-align: center; padding: 10px; border-radius: 10px; background: var(--surface-alt); color: var(--text); font-size: 13px; font-weight: 700; text-decoration: none; border: 1px solid var(--border); transition: background 0.2s; }
+.enlaces a:hover { background: var(--orange); border-color: var(--orange); }
+select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font: 14px 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); outline: none; }
+select:focus { border-color: var(--orange); }
+.msg { text-align: center; color: var(--text-soft); font-size: 14px; padding: 40px 0; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed var(--border); }
+.fab { position: fixed; right: 18px; bottom: 22px; background: var(--orange); color: #fff; border: none; border-radius: 28px; padding: 15px 22px; font: 700 14px 'Plus Jakarta Sans', sans-serif; box-shadow: 0 4px 16px rgba(255, 101, 0, 0.5); cursor: pointer; z-index: 10; display: flex; align-items: center; gap: 8px; }
+.fab:hover { background: var(--orange-hover); }
+#escaner { display: none; position: fixed; inset: 0; background: rgba(11, 25, 44, 0.95); backdrop-filter: blur(6px); z-index: 50; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
+#escaner p { color: #fff; font-size: 14px; margin-bottom: 12px; text-align: center; }
+#lector { width: 100%; max-width: 420px; background: #000; border-radius: 14px; overflow: hidden; border: 2px solid var(--orange); }
+#escaner button { margin-top: 16px; padding: 12px 28px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-alt); font: 700 14px 'Plus Jakarta Sans', sans-serif; color: var(--text); cursor: pointer; }
 </style>
 </head>
 <body>
-<header><h1 id="saludo">Mi ruta</h1><button id="salir">Salir</button></header>
+<header>
+  <div class="brand-box">
+    <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo" alt="Transporte Leen">
+    <h1 id="saludo">Mi ruta</h1>
+  </div>
+  <button id="salir">Salir</button>
+</header>
+
 <button class="fab" id="btnEscanear">📷 Escanear etiqueta</button>
-<div id="escaner"><p>Apunta la cámara al código de barras o QR de la etiqueta.</p><div id="lector"></div><button id="cerrarEscaner">Cancelar</button></div>
-<main id="lista"><div class="msg">Cargando tus entregas...</div></main>
+
+<div id="escaner">
+  <p>Apunta la cámara al código de barras o QR de la etiqueta.</p>
+  <div id="lector"></div>
+  <button id="cerrarEscaner">Cancelar</button>
+</div>
+
+<main id="lista">
+  <div class="msg">Cargando tus entregas...</div>
+</main>
+
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
@@ -144,7 +190,7 @@ function encontrar(codCrudo) {
   }
 
   hallado.scrollIntoView({ behavior: "smooth", block: "center" });
-  hallado.style.outline = "3px solid #b9935a";
+  hallado.style.outline = "3px solid #ff6500";
   setTimeout(function () { hallado.style.outline = ""; }, 4000);
 
   var sel = hallado.querySelector("select");
