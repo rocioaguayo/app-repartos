@@ -2,27 +2,26 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transporte Leen - Fletes, Mudanzas y Encomiendas</title>
   <!-- Google Fonts & Lucide Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --navy-main: #132036;
-      --navy-card: #1e293b;
-      --orange-brand: #ff6a00;
-      --orange-hover: #e05d00;
-      --orange-light: rgba(255, 106, 0, 0.15);
+      --bg-dark: #0b192c;
+      --navy-main: #1e3e62;
+      --navy-card: #172554;
+      --orange-brand: #ff6500;
+      --orange-hover: #e05500;
+      --orange-light: rgba(255, 101, 0, 0.15);
       --text-white: #ffffff;
-      --text-slate: #94a3b8;
-      --border: rgba(255, 255, 255, 0.1);
+      --text-slate: #cbd5e1;
+      --border: rgba(255, 255, 255, 0.15);
       --radius: 16px;
-      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -36,39 +35,18 @@
       background-color: var(--bg-dark);
       color: var(--text-white);
       line-height: 1.6;
-      overflow-x: hidden;
     }
 
-    /* --- ESTILOS DE LOGO --- */
-    .brand-logo {
-      height: 48px;
-      width: 48px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid var(--orange-brand);
-      box-shadow: 0 2px 8px rgba(255, 106, 0, 0.3);
-    }
-
-    .brand-logo-hero {
-      width: 140px;
-      height: 140px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 4px solid var(--orange-brand);
-      box-shadow: 0 10px 25px rgba(255, 106, 0, 0.3);
-      margin-bottom: 1.5rem;
-    }
-
-    /* --- NAVEGACIÓN --- */
+    /* --- LOGO Y NAVEGACIÓN --- */
     nav {
       position: fixed;
       top: 0;
       width: 100%;
-      background: rgba(15, 23, 42, 0.92);
-      backdrop-filter: blur(12px);
+      background: rgba(11, 25, 44, 0.95);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
       z-index: 100;
-      padding: 0.75rem 1.5rem;
+      padding: 0.8rem 1.5rem;
     }
 
     .nav-container {
@@ -84,36 +62,27 @@
       align-items: center;
       gap: 12px;
       font-weight: 800;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       color: var(--text-white);
       text-decoration: none;
     }
 
-    .nav-links {
-      display: flex;
-      gap: 1.5rem;
-      align-items: center;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--text-slate);
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover {
-      color: var(--orange-brand);
+    .brand-logo {
+      height: 44px;
+      width: 44px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid var(--orange-brand);
     }
 
     .btn-nav {
       background: var(--orange-brand);
-      color: white !important;
+      color: white;
       padding: 0.6rem 1.2rem;
       border-radius: 50px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      text-decoration: none;
       transition: background 0.2s;
     }
 
@@ -121,7 +90,7 @@
       background: var(--orange-hover);
     }
 
-    /* --- HERO SECTION --- */
+    /* --- HERO --- */
     .hero {
       padding: 8rem 1.5rem 4rem;
       max-width: 1200px;
@@ -143,16 +112,14 @@
       font-size: 0.85rem;
       font-weight: 700;
       margin-bottom: 1.25rem;
-      border: 1px solid rgba(255, 106, 0, 0.3);
+      border: 1px solid rgba(255, 101, 0, 0.3);
     }
 
     .hero-title {
       font-size: 3rem;
       font-weight: 800;
-      line-height: 1.15;
+      line-height: 1.1;
       margin-bottom: 0.5rem;
-      color: var(--text-white);
-      letter-spacing: -0.02em;
       text-transform: uppercase;
     }
 
@@ -166,7 +133,6 @@
       color: var(--orange-brand);
       margin-bottom: 1.2rem;
       font-weight: 700;
-      line-height: 1;
     }
 
     .hero-subtitle {
@@ -178,7 +144,6 @@
     .hero-actions {
       display: flex;
       gap: 1rem;
-      align-items: center;
       flex-wrap: wrap;
     }
 
@@ -192,18 +157,11 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 14px rgba(255, 106, 0, 0.4);
-      transition: all 0.2s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-primary:hover {
-      background: var(--orange-hover);
+      box-shadow: 0 4px 14px rgba(255, 101, 0, 0.4);
     }
 
     .btn-secondary {
-      background: var(--navy-card);
+      background: var(--navy-main);
       color: var(--text-white);
       padding: 0.9rem 1.6rem;
       border-radius: 12px;
@@ -215,18 +173,17 @@
       gap: 8px;
     }
 
-    /* --- HERO MOCKUP --- */
+    /* --- TARJETA MOCKUP --- */
     .app-preview-card {
       background: var(--navy-main);
       border-radius: var(--radius);
-      border: 1px solid var(--orange-brand);
-      box-shadow: var(--shadow);
+      border: 2px solid var(--orange-brand);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       overflow: hidden;
     }
 
     .preview-header {
-      background: #090e17;
-      color: white;
+      background: #06101e;
       padding: 1rem 1.25rem;
       display: flex;
       justify-content: space-between;
@@ -235,20 +192,18 @@
       font-weight: 600;
     }
 
-    .status-badge {
-      background: rgba(16, 185, 129, 0.2);
-      color: #34d399;
-      padding: 4px 10px;
-      border-radius: 50px;
-      font-size: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
     .preview-body {
       padding: 1.5rem;
       text-align: center;
+    }
+
+    .brand-logo-hero {
+      width: 130px;
+      height: 130px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid var(--orange-brand);
+      margin-bottom: 1rem;
     }
 
     .contact-card-list {
@@ -257,14 +212,13 @@
       padding: 1.2rem;
       border: 1px solid var(--border);
       text-align: left;
-      margin-top: 1rem;
     }
 
     .contact-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
       font-size: 0.95rem;
     }
 
@@ -276,9 +230,267 @@
       color: var(--orange-brand);
     }
 
-    /* --- FEATURES SECTION --- */
+    /* --- SERVICIOS --- */
     .features {
       padding: 4rem 1.5rem;
       max-width: 1200px;
       margin: 0 auto;
     }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--navy-main);
+      padding: 1.75rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--orange-light);
+      color: var(--orange-brand);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    /* --- RASTREO --- */
+    .tracking-section {
+      background: #06101e;
+      padding: 4rem 1.5rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tracking-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .tracking-box {
+      background: var(--navy-main);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--orange-brand);
+      margin-top: 1.5rem;
+    }
+
+    .tracking-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .tracking-input {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-dark);
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .tracking-result {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: left;
+      display: none;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      background: #06101e;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--text-slate);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 6rem;
+        text-align: center;
+      }
+      .hero-title {
+        font-size: 2.2rem;
+      }
+      .slogan-cursivo {
+        font-size: 1.8rem;
+      }
+      .hero-actions {
+        justify-content: center;
+      }
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+      .tracking-form {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-container">
+      <a href="#" class="logo">
+        <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo" alt="Transporte Leen">
+        <span>TRANSPORTE <strong style="color:var(--orange-brand)">LEEN</strong></span>
+      </a>
+      <a href="panel-admin.html" target="_blank" class="btn-nav">Ingresar al Sistema</a>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i data-lucide="truck" size="16"></i> FLETES • MUDANZAS • ENCOMIENDAS
+      </div>
+      <h1 class="hero-title">TRANSPORTE <span>LEEN</span></h1>
+      <p class="slogan-cursivo">Más que carga, transportamos confianza</p>
+      
+      <p class="hero-subtitle">
+        Soluciones integrales de transporte con seguimiento en tiempo real, seguridad y máxima eficiencia.
+      </p>
+
+      <div class="hero-actions">
+        <a href="https://wa.me/56940756676" target="_blank" class="btn-primary">
+          <i data-lucide="message-circle" size="18"></i> Contactar por WhatsApp
+        </a>
+        <a href="#rastreo" class="btn-secondary">
+          <i data-lucide="search" size="18"></i> Rastrear Encomienda
+        </a>
+      </div>
+    </div>
+
+    <!-- MOCKUP VISUAL -->
+    <div class="hero-visual">
+      <div class="app-preview-card">
+        <div class="preview-header">
+          <span>🚚 Datos de Contacto Directo</span>
+          <span style="color:#34d399;">● Verificado</span>
+        </div>
+        <div class="preview-body">
+          <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo-hero" alt="Transporte Leen">
+
+          <div class="contact-card-list">
+            <div class="contact-item">
+              <i data-lucide="phone"></i>
+              <span>+56 9 4075 6676</span>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="mail"></i>
+              <span>transporteleen.info@gmail.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICIOS -->
+  <section class="features" id="servicios">
+    <div class="section-header">
+      <h2>Nuestros Servicios Logísticos</h2>
+      <p style="color: var(--text-slate);">Aseguramos que tu carga llegue a tiempo y en perfectas condiciones.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i data-lucide="truck"></i></div>
+        <h3>Fletes</h3>
+        <p style="color: var(--text-slate); font-size: 0.9rem; margin-top: 0.5rem;">Traslado directo de mercadería y materiales con máxima seguridad.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><i data-lucide="home"></i></div>
+        <h3>Mudanzas</h3>
+        <p style="color: var(--text-slate); font-size: 0.9rem; margin-top: 0.5rem;">Servicio integral de mudanzas residenciales y corporativas.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><i data-lucide="package"></i></div>
+        <h3>Encomiendas</h3>
+        <p style="color: var(--text-slate); font-size: 0.9rem; margin-top: 0.5rem;">Despacho expreso de paquetes con código de seguimiento.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIMULADOR DE RASTREO -->
+  <section class="tracking-section" id="rastreo">
+    <div class="tracking-container">
+      <h2>Rastreo de Encomiendas</h2>
+      <p style="color: var(--text-slate); margin-top: 0.5rem;">Ingresa tu número de guía para consultar el estado:</p>
+
+      <div class="tracking-box">
+        <div class="tracking-form">
+          <input type="text" id="trackingInput" class="tracking-input" placeholder="Ej: TL-8823" value="TL-8823">
+          <button class="btn-primary" onclick="buscarPaquete()">Consultar</button>
+        </div>
+
+        <div id="trackingResult" class="tracking-result">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem;">
+            <div>
+              <p style="font-size: 0.8rem; color: var(--text-slate);">Código de Seguimiento</p>
+              <h4 id="guiaCode" style="font-size: 1.1rem; font-weight: 700;">TL-8823</h4>
+            </div>
+            <span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 4px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">En Ruta</span>
+          </div>
+          <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #cbd5e1;">Su paquete está en camino a la dirección de destino.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p class="slogan-cursivo" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Más que carga, transportamos confianza</p>
+    <p>© 2026 Transporte Leen. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function buscarPaquete() {
+      const code = document.getElementById('trackingInput').value.trim();
+      const resultBox = document.getElementById('trackingResult');
+      const guiaCode = document.getElementById('guiaCode');
+
+      if (!code) {
+        alert('Por favor ingresa un número de guía.');
+        return;
+      }
+
+      guiaCode.textContent = code.toUpperCase();
+      resultBox.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
