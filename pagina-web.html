@@ -1,496 +1,462 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transporte Leen - Fletes, Mudanzas y Encomiendas</title>
-  <!-- Google Fonts & Lucide Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transportes Leen - Gestión Eficiente y Rastreo de Repartos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
-  <style>
-    :root {
-      --bg-dark: #0b192c;
-      --navy-main: #1e3e62;
-      --navy-card: #172554;
-      --orange-brand: #ff6500;
-      --orange-hover: #e05500;
-      --orange-light: rgba(255, 101, 0, 0.15);
-      --text-white: #ffffff;
-      --text-slate: #cbd5e1;
-      --border: rgba(255, 255, 255, 0.15);
-      --radius: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-white);
-      line-height: 1.6;
-    }
-
-    /* --- LOGO Y NAVEGACIÓN --- */
-    nav {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: rgba(11, 25, 44, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      z-index: 100;
-      padding: 0.8rem 1.5rem;
-    }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: var(--text-white);
-      text-decoration: none;
-    }
-
-    .brand-logo {
-      height: 44px;
-      width: 44px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid var(--orange-brand);
-    }
-
-    .btn-nav {
-      background: var(--orange-brand);
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .btn-nav:hover {
-      background: var(--orange-hover);
-    }
-
-    /* --- HERO --- */
-    .hero {
-      padding: 8rem 1.5rem 4rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2.5rem;
-      align-items: center;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--orange-light);
-      color: var(--orange-brand);
-      padding: 6px 16px;
-      border-radius: 50px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 1.25rem;
-      border: 1px solid rgba(255, 101, 0, 0.3);
-    }
-
-    .hero-title {
-      font-size: 3rem;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-    }
-
-    .hero-title span {
-      color: var(--orange-brand);
-    }
-
-    .slogan-cursivo {
-      font-family: 'Caveat', cursive;
-      font-size: 2.2rem;
-      color: var(--orange-brand);
-      margin-bottom: 1.2rem;
-      font-weight: 700;
-    }
-
-    .hero-subtitle {
-      font-size: 1.05rem;
-      color: var(--text-slate);
-      margin-bottom: 2rem;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      background: var(--orange-brand);
-      color: white;
-      padding: 0.9rem 1.6rem;
-      border-radius: 12px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(255, 101, 0, 0.4);
-    }
-
-    .btn-secondary {
-      background: var(--navy-main);
-      color: var(--text-white);
-      padding: 0.9rem 1.6rem;
-      border-radius: 12px;
-      font-weight: 600;
-      text-decoration: none;
-      border: 1px solid var(--border);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* --- TARJETA MOCKUP --- */
-    .app-preview-card {
-      background: var(--navy-main);
-      border-radius: var(--radius);
-      border: 2px solid var(--orange-brand);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      overflow: hidden;
-    }
-
-    .preview-header {
-      background: #06101e;
-      padding: 1rem 1.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .preview-body {
-      padding: 1.5rem;
-      text-align: center;
-    }
-
-    .brand-logo-hero {
-      width: 130px;
-      height: 130px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 4px solid var(--orange-brand);
-      margin-bottom: 1rem;
-    }
-
-    .contact-card-list {
-      background: var(--navy-card);
-      border-radius: 12px;
-      padding: 1.2rem;
-      border: 1px solid var(--border);
-      text-align: left;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 0.8rem;
-      font-size: 0.95rem;
-    }
-
-    .contact-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .contact-item i {
-      color: var(--orange-brand);
-    }
-
-    /* --- SERVICIOS --- */
-    .features {
-      padding: 4rem 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .section-header h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .feature-card {
-      background: var(--navy-main);
-      padding: 1.75rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-    }
-
-    .feature-icon {
-      width: 44px;
-      height: 44px;
-      background: var(--orange-light);
-      color: var(--orange-brand);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-    }
-
-    /* --- RASTREO --- */
-    .tracking-section {
-      background: #06101e;
-      padding: 4rem 1.5rem;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tracking-container {
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .tracking-box {
-      background: var(--navy-main);
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--orange-brand);
-      margin-top: 1.5rem;
-    }
-
-    .tracking-form {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 1rem;
-    }
-
-    .tracking-input {
-      flex: 1;
-      padding: 0.8rem 1rem;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg-dark);
-      color: white;
-      font-size: 0.95rem;
-    }
-
-    .tracking-result {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
-      padding: 1.25rem;
-      text-align: left;
-      display: none;
-    }
-
-    /* --- FOOTER --- */
-    footer {
-      background: #06101e;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      color: var(--text-slate);
-      font-size: 0.85rem;
-      border-top: 1px solid var(--border);
-    }
-
-    @media (max-width: 768px) {
-      .hero {
-        grid-template-columns: 1fr;
-        padding-top: 6rem;
-        text-align: center;
-      }
-      .hero-title {
-        font-size: 2.2rem;
-      }
-      .slogan-cursivo {
-        font-size: 1.8rem;
-      }
-      .hero-actions {
-        justify-content: center;
-      }
-      .btn-primary, .btn-secondary {
-        width: 100%;
-        justify-content: center;
-      }
-      .tracking-form {
-        flex-direction: column;
-      }
-    }
-  </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#132036',
+                            900: '#0b192c',
+                            950: '#06101e',
+                        },
+                        brand: {
+                            orange: '#ff6500',
+                            orangeHover: '#e05500',
+                            navyLight: '#1e3e62',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                        cursive: ['Caveat', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(19, 32, 54, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 101, 0, 0.2);
+        }
+        .glow-effect {
+            box-shadow: 0 0 40px -10px rgba(255, 101, 0, 0.25);
+        }
+        .scan-line {
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff6500, #ff8533, transparent);
+            position: absolute;
+            animation: scan 2.2s ease-in-out infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; opacity: 0.2; }
+            50% { top: 90%; opacity: 1; }
+            100% { top: 0%; opacity: 0.2; }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-[#06101e] text-slate-100 font-sans antialiased selection:bg-brand-orange selection:text-white overflow-x-hidden">
 
-  <!-- NAVBAR -->
-  <nav>
-    <div class="nav-container">
-      <a href="#" class="logo">
-        <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo" alt="Transporte Leen">
-        <span>TRANSPORTE <strong style="color:var(--orange-brand)">LEEN</strong></span>
-      </a>
-      <a href="panel-admin.html" target="_blank" class="btn-nav">Ingresar al Sistema</a>
-    </div>
-  </nav>
+    <!-- NAVIGATION -->
+    <nav class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-slate-800/80 bg-[#0b192c]/90 backdrop-blur-md" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="w-11 h-11 rounded-full object-cover border-2 border-brand-orange shadow-lg shadow-orange-500/20" alt="Transportes Leen">
+                    <div>
+                        <span class="font-heading font-extrabold text-2xl tracking-tight text-white block">
+                            Transportes <span class="text-brand-orange">Leen</span>
+                        </span>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold block -mt-1">Fletes • Mudanzas • Encomiendas</span>
+                    </div>
+                </div>
 
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <div class="hero-content">
-      <div class="hero-badge">
-        <i data-lucide="truck" size="16"></i> FLETES • MUDANZAS • ENCOMIENDAS
-      </div>
-      <h1 class="hero-title">TRANSPORTE <span>LEEN</span></h1>
-      <p class="slogan-cursivo">Más que carga, transportamos confianza</p>
-      
-      <p class="hero-subtitle">
-        Soluciones integrales de transporte con seguimiento en tiempo real, seguridad y máxima eficiencia.
-      </p>
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                    <a href="#caracteristicas" class="hover:text-brand-orange transition-colors">Características</a>
+                    <a href="#demo" class="hover:text-brand-orange transition-colors">Vista Previa</a>
+                    <a href="#proceso" class="hover:text-brand-orange transition-colors">Cómo Funciona</a>
+                    <a href="#rastreo" class="hover:text-brand-orange transition-colors">Rastrear Envío</a>
+                </div>
 
-      <div class="hero-actions">
-        <a href="https://wa.me/56940756676" target="_blank" class="btn-primary">
-          <i data-lucide="message-circle" size="18"></i> Contactar por WhatsApp
-        </a>
-        <a href="#rastreo" class="btn-secondary">
-          <i data-lucide="search" size="18"></i> Rastrear Encomienda
-        </a>
-      </div>
-    </div>
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="https://rocioaguayo.github.io/app-repartos/panel-admin.html" target="_blank" rel="noopener noreferrer" class="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium rounded-xl group bg-brand-orange hover:bg-brand-orangeHover text-white shadow-lg shadow-orange-500/20 transition-all duration-300">
+                        <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-[#0b192c] rounded-[10px] group-hover:bg-opacity-0 font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-gauge-high text-brand-orange group-hover:text-white"></i>
+                            Panel de Admón
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70"></i>
+                        </span>
+                    </a>
+                </div>
 
-    <!-- MOCKUP VISUAL -->
-    <div class="hero-visual">
-      <div class="app-preview-card">
-        <div class="preview-header">
-          <span>🚚 Datos de Contacto Directo</span>
-          <span style="color:#34d399;">● Verificado</span>
-        </div>
-        <div class="preview-body">
-          <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo-hero" alt="Transporte Leen">
-
-          <div class="contact-card-list">
-            <div class="contact-item">
-              <i data-lucide="phone"></i>
-              <span>+56 9 4075 6676</span>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="p-2 text-slate-300 hover:text-white focus:outline-none" aria-label="Abrir menú">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
             </div>
-            <div class="contact-item">
-              <i data-lucide="mail"></i>
-              <span>transporteleen.info@gmail.com</span>
+        </div>
+
+        <!-- Mobile dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0b192c] border-b border-slate-800 px-4 pt-2 pb-6 space-y-3">
+            <a href="#caracteristicas" class="block py-2 text-slate-300 hover:text-white font-medium">Características</a>
+            <a href="#demo" class="block py-2 text-slate-300 hover:text-white font-medium">Vista Previa</a>
+            <a href="#proceso" class="block py-2 text-slate-300 hover:text-white font-medium">Cómo Funciona</a>
+            <a href="#rastreo" class="block py-2 text-slate-300 hover:text-white font-medium">Rastrear Envío</a>
+            <a href="https://rocioaguayo.github.io/app-repartos/panel-admin.html" target="_blank" class="block w-full text-center py-3 mt-4 bg-brand-orange text-white font-semibold rounded-xl shadow-md">
+                Acceder al Panel Admin
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-[#0b192c]">
+        <!-- Ambient background glows -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-orange/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#132036] border border-orange-500/30 text-xs font-semibold text-brand-orange mb-4">
+                    <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Sistema Integral Logístico de Última Milla
+                </div>
+                
+                <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white mb-2">
+                    Gestión Eficiente y Rastreo de Repartos con <span class="text-brand-orange">Transportes Leen</span>
+                </h1>
+
+                <!-- Slogan en letra cursiva -->
+                <p class="font-cursive text-3xl sm:text-4xl text-brand-orange font-bold mb-6">
+                    Más que carga, transportamos confianza
+                </p>
+
+                <p class="text-lg sm:text-xl text-slate-300 mb-8 font-normal leading-relaxed">
+                    Optimiza la recepción de encomiendas, control de choferes, trazabilidad en tiempo real y asignación de rutas desde un panel de administración centralizado y fácil de usar.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="https://rocioaguayo.github.io/app-repartos/panel-admin.html" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-orange hover:bg-brand-orangeHover text-white font-bold text-base shadow-lg shadow-orange-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-square-poll-vertical text-lg"></i>
+                        Probar Panel de Admón
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </a>
+                    
+                    <a href="https://wa.me/56940756676" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#132036] hover:bg-[#1e3e62] border border-slate-700 text-slate-200 font-semibold text-base transition-all flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-brand-orange text-lg"></i>
+                        Contacto: +56 9 4075 6676
+                    </a>
+                </div>
+
+                <!-- Stats summary badges -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 pt-8 border-t border-slate-800/60 text-left">
+                    <div class="p-4 rounded-xl bg-[#132036]/60 border border-slate-800">
+                        <div class="text-2xl font-bold font-heading text-white">99.8%</div>
+                        <div class="text-xs text-slate-400 font-medium mt-1">Efectividad de Entrega</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-[#132036]/60 border border-slate-800">
+                        <div class="text-2xl font-bold font-heading text-white">&lt; 1 sec</div>
+                        <div class="text-xs text-slate-400 font-medium mt-1">Escaneo de Código</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-[#132036]/60 border border-slate-800">
+                        <div class="text-2xl font-bold font-heading text-white">100%</div>
+                        <div class="text-xs text-slate-400 font-medium mt-1">Trazabilidad en Vivo</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-[#132036]/60 border border-slate-800">
+                        <div class="text-2xl font-bold font-heading text-white">24/7</div>
+                        <div class="text-xs text-slate-400 font-medium mt-1">Acceso Administrativo</div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- SERVICIOS -->
-  <section class="features" id="servicios">
-    <div class="section-header">
-      <h2>Nuestros Servicios Logísticos</h2>
-      <p style="color: var(--text-slate);">Aseguramos que tu carga llegue a tiempo y en perfectas condiciones.</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon"><i data-lucide="truck"></i></div>
-        <h3>Fletes</h3>
-        <p style="color: var(--text-slate); font-size: 0.9rem; margin-top: 0.5rem;">Traslado directo de mercadería y materiales con máxima seguridad.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i data-lucide="home"></i></div>
-        <h3>Mudanzas</h3>
-        <p style="color: var(--text-slate); font-size: 0.9rem; margin-top: 0.5rem;">Servicio integral de mudanzas residenciales y corporativas.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i data-lucide="package"></i></div>
-        <h3>Encomiendas</h3>
-        <p style="color: var(--text-slate); font-size: 0.9rem; margin-top: 0.5rem;">Despacho expreso de paquetes con código de seguimiento.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- SIMULADOR DE RASTREO -->
-  <section class="tracking-section" id="rastreo">
-    <div class="tracking-container">
-      <h2>Rastreo de Encomiendas</h2>
-      <p style="color: var(--text-slate); margin-top: 0.5rem;">Ingresa tu número de guía para consultar el estado:</p>
-
-      <div class="tracking-box">
-        <div class="tracking-form">
-          <input type="text" id="trackingInput" class="tracking-input" placeholder="Ej: TL-8823" value="TL-8823">
-          <button class="btn-primary" onclick="buscarPaquete()">Consultar</button>
-        </div>
-
-        <div id="trackingResult" class="tracking-result">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem;">
-            <div>
-              <p style="font-size: 0.8rem; color: var(--text-slate);">Código de Seguimiento</p>
-              <h4 id="guiaCode" style="font-size: 1.1rem; font-weight: 700;">TL-8823</h4>
+    <!-- INTERACTIVE DEMO -->
+    <section id="demo" class="py-20 bg-[#06101e] relative border-y border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <h2 class="text-xs uppercase tracking-widest text-brand-orange font-bold mb-2">Demostración Interactiva</h2>
+                <p class="font-heading text-3xl sm:text-4xl font-extrabold text-white">Explora la Interfaz de Transportes Leen</p>
+                <p class="text-slate-400 text-sm mt-3">Prueba los controles de filtrado, simulador de escaneo y KPI del sistema directamente en esta vista previa interactiva.</p>
             </div>
-            <span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 4px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">En Ruta</span>
-          </div>
-          <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #cbd5e1;">Su paquete está en camino a la dirección de destino.</p>
+
+            <!-- Simulated App Container -->
+            <div class="glass-card rounded-2xl overflow-hidden shadow-2xl border border-orange-500/30 max-w-5xl mx-auto glow-effect">
+                <!-- App Window Header -->
+                <div class="bg-[#0b192c] px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="w-6 h-6 rounded-full border border-brand-orange" alt="Logo">
+                        <span class="text-xs text-slate-300 font-mono">app-repartos / panel-admin.html</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                            Sistema Activo
+                        </span>
+                    </div>
+                </div>
+
+                <!-- App Inner Body -->
+                <div class="p-4 sm:p-6 bg-[#0b192c]/90 min-h-[500px]">
+                    <!-- Admin KPI Bar -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                        <div class="bg-[#132036] p-4 rounded-xl border border-slate-800">
+                            <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+                                <span>Total Pedidos</span>
+                                <i class="fa-solid fa-box text-brand-orange"></i>
+                            </div>
+                            <div class="text-2xl font-bold font-heading text-white" id="kpi-total">148</div>
+                            <div class="text-[11px] text-emerald-400 mt-1 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> +12.5% hoy</div>
+                        </div>
+
+                        <div class="bg-[#132036] p-4 rounded-xl border border-slate-800">
+                            <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+                                <span>En Ruta</span>
+                                <i class="fa-solid fa-truck-ramp-box text-amber-400"></i>
+                            </div>
+                            <div class="text-2xl font-bold font-heading text-amber-400" id="kpi-enruta">42</div>
+                            <div class="text-[11px] text-slate-400 mt-1 font-medium">12 conductores activos</div>
+                        </div>
+
+                        <div class="bg-[#132036] p-4 rounded-xl border border-slate-800">
+                            <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+                                <span>Entregados</span>
+                                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                            </div>
+                            <div class="text-2xl font-bold font-heading text-emerald-400" id="kpi-entregados">98</div>
+                            <div class="text-[11px] text-slate-400 mt-1 font-medium">Completo hoy</div>
+                        </div>
+
+                        <div class="bg-[#132036] p-4 rounded-xl border border-slate-800">
+                            <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+                                <span>Pendientes</span>
+                                <i class="fa-solid fa-clock text-amber-500"></i>
+                            </div>
+                            <div class="text-2xl font-bold font-heading text-slate-300" id="kpi-pendientes">8</div>
+                            <div class="text-[11px] text-slate-400 mt-1 font-medium">Por asignar chofer</div>
+                        </div>
+                    </div>
+
+                    <!-- Scan & Controls Toolbar -->
+                    <div class="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center mb-6 bg-[#132036]/60 p-4 rounded-xl border border-slate-800">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="filterStatus('all')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-orange text-white transition-all">
+                                Todos (8)
+                            </button>
+                            <button onclick="filterStatus('En Ruta')" id="filter-enruta" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0b192c] text-slate-300 hover:bg-slate-800 transition-all">
+                                En Ruta
+                            </button>
+                            <button onclick="filterStatus('Entregado')" id="filter-entregado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0b192c] text-slate-300 hover:bg-slate-800 transition-all">
+                                Entregados
+                            </button>
+                            <button onclick="filterStatus('Pendiente')" id="filter-pendiente" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0b192c] text-slate-300 hover:bg-slate-800 transition-all">
+                                Pendientes
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <div class="relative flex-1 sm:w-64">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                                <input type="text" id="demo-search" onkeyup="renderDemoTable()" placeholder="Buscar orden o cliente..." class="w-full bg-[#06101e] border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-brand-orange">
+                            </div>
+                            <button onclick="triggerSimulatedScan()" class="px-3.5 py-1.5 rounded-lg bg-brand-orange/20 border border-brand-orange/40 text-brand-orange hover:bg-brand-orange hover:text-white font-semibold text-xs transition-all flex items-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-barcode"></i>
+                                Simular Escaneo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scanner Animation Modal Triggered Area -->
+                    <div id="scanner-modal" class="hidden mb-6 bg-[#132036] border border-brand-orange/40 rounded-xl p-4 relative overflow-hidden">
+                        <div class="scan-line"></div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-brand-orange/10 border border-brand-orange/40 flex items-center justify-center text-brand-orange text-lg">
+                                    <i class="fa-solid fa-qrcode animate-pulse"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-semibold text-brand-orange uppercase tracking-wider">Escaneando etiqueta...</div>
+                                    <div class="text-sm font-bold text-white font-mono" id="scan-code-display">LEEN-8842-CL</div>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded font-semibold border border-emerald-500/30">
+                                Paquete Registrado
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Simulated Table -->
+                    <div class="overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-[#132036] text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">Código Tracking</th>
+                                    <th class="p-3">Destinatario</th>
+                                    <th class="p-3">Dirección</th>
+                                    <th class="p-3">Repartidor</th>
+                                    <th class="p-3">Estado</th>
+                                    <th class="p-3 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="demo-table-body" class="divide-y divide-slate-800/60 bg-[#06101e]/60">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- FOOTER -->
-  <footer>
-    <p class="slogan-cursivo" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Más que carga, transportamos confianza</p>
-    <p>© 2026 Transporte Leen. Todos los derechos reservados.</p>
-  </footer>
+    <!-- CARACTERÍSTICAS -->
+    <section id="caracteristicas" class="py-24 bg-[#0b192c] relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-brand-orange font-bold mb-2">Potencial de la Plataforma</h2>
+                <p class="font-heading text-3xl sm:text-4xl font-extrabold text-white">Todo lo que necesitas para operar tu logística</p>
+                <p class="text-slate-400 text-base mt-3">Diseñado específicamente para optimizar la cadena de entrega desde el centro de acopio hasta el cliente final.</p>
+            </div>
 
-  <script>
-    lucide.createIcons();
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1 -->
+                <div class="p-6 rounded-2xl bg-[#132036]/80 border border-slate-800 hover:border-brand-orange/40 transition-all duration-300 group">
+                    <div class="w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-barcode"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg text-white mb-2">Recepción de Paquetes</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Escáner rápido para código de barras y QR. Registra ingresos masivos de paquetes instantáneamente eliminando errores manuales.
+                    </p>
+                </div>
 
-    function buscarPaquete() {
-      const code = document.getElementById('trackingInput').value.trim();
-      const resultBox = document.getElementById('trackingResult');
-      const guiaCode = document.getElementById('guiaCode');
+                <!-- Card 2 -->
+                <div class="p-6 rounded-2xl bg-[#132036]/80 border border-slate-800 hover:border-brand-orange/40 transition-all duration-300 group">
+                    <div class="w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-route"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg text-white mb-2">Gestión de Rutas</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Asignación eficiente de paquetes por chofer y sector. Monitoreo del estado del despacho en tiempo real.
+                    </p>
+                </div>
 
-      if (!code) {
-        alert('Por favor ingresa un número de guía.');
-        return;
-      }
+                <!-- Card 3 -->
+                <div class="p-6 rounded-2xl bg-[#132036]/80 border border-slate-800 hover:border-brand-orange/40 transition-all duration-300 group">
+                    <div class="w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg text-white mb-2">Panel Administrativo</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Control total sobre el catálogo de entregas, filtrado avanzado por estados, choferes asignados y roles de usuario.
+                    </p>
+                </div>
 
-      guiaCode.textContent = code.toUpperCase();
-      resultBox.style.display = 'block';
-    }
-  </script>
-</body>
-</html>
+                <!-- Card 4 -->
+                <div class="p-6 rounded-2xl bg-[#132036]/80 border border-slate-800 hover:border-brand-orange/40 transition-all duration-300 group">
+                    <div class="w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center text-xl mb-5 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg text-white mb-2">Reportes y Verificación</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Trazabilidad transparente del proceso de entrega, control de sesión seguro y verificación inmediata de recepciones.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESO -->
+    <section id="proceso" class="py-20 bg-[#06101e] border-y border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-brand-orange font-bold mb-2">Flujo Simplificado</h2>
+                <p class="font-heading text-3xl sm:text-4xl font-extrabold text-white">¿Cómo Funciona Transportes Leen?</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                <!-- Step 1 -->
+                <div class="relative p-6 rounded-2xl bg-[#132036] border border-slate-800 flex flex-col items-start">
+                    <div class="w-10 h-10 rounded-lg bg-brand-orange font-heading font-extrabold text-white flex items-center justify-center text-lg mb-4 shadow-md">
+                        1
+                    </div>
+                    <h3 class="font-heading text-xl font-bold text-white mb-2">Recepción e Ingreso</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        El paquete llega al centro logístico. Se escanea el código de barras asignando automáticamente el ID único del paquete en el panel de control.
+                    </p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative p-6 rounded-2xl bg-[#132036] border border-slate-800 flex flex-col items-start">
+                    <div class="w-10 h-10 rounded-lg bg-brand-orange font-heading font-extrabold text-white flex items-center justify-center text-lg mb-4 shadow-md">
+                        2
+                    </div>
+                    <h3 class="font-heading text-xl font-bold text-white mb-2">Asignación y Salida</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Se asigna el bulto a un conductor y ruta de despacho específica. El estado cambia inmediatamente a <span class="text-amber-400 font-semibold">En Ruta</span>.
+                    </p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative p-6 rounded-2xl bg-[#132036] border border-slate-800 flex flex-col items-start">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-500 font-heading font-extrabold text-slate-950 flex items-center justify-center text-lg mb-4 shadow-md">
+                        3
+                    </div>
+                    <h3 class="font-heading text-xl font-bold text-white mb-2">Entrega y Confirmación</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        El repartidor entrega el envío en el domicilio destino, actualizando el estado a <span class="text-emerald-400 font-semibold">Entregado</span> con la trazabilidad completa.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RASTREO SIMULADOR -->
+    <section id="rastreo" class="py-24 bg-[#0b192c] relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="glass-card rounded-3xl p-6 sm:p-10 border border-brand-orange/30 glow-effect text-center">
+                <div class="w-14 h-14 rounded-2xl bg-brand-orange text-white flex items-center justify-center text-2xl mx-auto mb-6 shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-magnifying-glass-location"></i>
+                </div>
+
+                <h2 class="font-heading text-3xl font-extrabold text-white mb-2">Simulador de Rastreo de Envíos</h2>
+                <p class="text-slate-300 text-sm max-w-lg mx-auto mb-8">
+                    Ingresa un código de seguimiento o haz clic en un ejemplo para consultar el estado del despacho:
+                </p>
+
+                <!-- Search Input Bar -->
+                <div class="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto mb-6">
+                    <input type="text" id="tracking-input" placeholder="Ej: LEEN-1029" class="flex-1 bg-[#06101e] border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-brand-orange font-mono uppercase tracking-wider">
+                    <button onclick="simulateTracking()" class="px-6 py-3.5 bg-brand-orange hover:bg-brand-orangeHover text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-md">
+                        <i class="fa-solid fa-search"></i>
+                        Consultar
+                    </button>
+                </div>
+
+                <!-- Sample tracking chips -->
+                <div class="flex flex-wrap items-center justify-center gap-2 mb-8 text-xs text-slate-400">
+                    <span>Probar códigos de ejemplo:</span>
+                    <button onclick="fillAndSearch('LEEN-1029')" class="px-2.5 py-1 rounded-md bg-[#132036] hover:bg-slate-800 border border-slate-700 text-brand-orange font-mono transition-colors">LEEN-1029</button>
+                    <button onclick="fillAndSearch('LEEN-3045')" class="px-2.5 py-1 rounded-md bg-[#132036] hover:bg-slate-800 border border-slate-700 text-brand-orange font-mono transition-colors">LEEN-3045</button>
+                    <button onclick="fillAndSearch('LEEN-9081')" class="px-2.5 py-1 rounded-md bg-[#132036] hover:bg-slate-800 border border-slate-700 text-brand-orange font-mono transition-colors">LEEN-9081</button>
+                </div>
+
+                <!-- Tracking Result Box -->
+                <div id="tracking-result" class="hidden text-left bg-[#06101e] rounded-2xl p-6 border border-slate-800">
+                    <!-- Dynamic tracking output -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="py-20 bg-[#06101e] border-t border-slate-800 text-center">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="font-heading text-3xl sm:text-4xl font-extrabold text-white mb-2">¿Listo para probar el Panel Administrativo?</h2>
+            <p class="font-cursive text-3xl text-brand-orange font-bold mb-6">Más que carga, transportamos confianza</p>
+            
+            <a href="https
