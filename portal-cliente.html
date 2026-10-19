@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Transporte Leen | Mis envíos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b192c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="seguimiento-comun.js"></script>
+<style>
+:root {
+  --bg: #0b192c;
+  --surface: #1e3e62;
+  --surface-alt: #172554;
+  --border: rgba(255, 255, 255, 0.15);
+  --text: #ffffff;
+  --text-soft: #cbd5e1;
+  --orange: #ff6500;
+  --orange-soft: rgba(255, 101, 0, 0.2);
+  --amber: #f59e0b;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --purple: #8b5cf6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 40px; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(11, 25, 44, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+header .marca { display: flex; align-items: center; gap: 10px; min-width: 0; }
+header img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; border: 2px solid var(--orange); flex-shrink: 0; }
+header h1 { font-size: 15px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+header h1 small { display: block; font-size: 11px; font-weight: 600; color: var(--text-soft); }
+header button { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 20px; padding: 8px 16px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--text-soft); cursor: pointer; flex-shrink: 0; }
+main { max-width: 640px; margin: 0 auto; padding: 16px; }
+.kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; color: #fff; font-family: inherit; }
+.kpi .num { font-size: 22px; font-weight: 800; line-height: 1.1; }
+.kpi .lbl { font-size: 11px; color: var(--text-soft); font-weight: 700; }
+.kpi.activo { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(255,101,0,.35); }
+.kpi.devuelto .num { color: #a78bfa; }
+.kpi.pendiente .num { color: var(--amber); } .kpi.en_camino .num { color: #60a5fa; } .kpi.entregado .num { color: var(--green); } .kpi.no_entregado .num { color: #f87171; }
+.buscar { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; font: 14px 'Plus Jakarta Sans', sans-serif; background: var(--surface); color: #fff; margin-bottom: 8px; }
+.buscar:focus { outline: none; border-color: var(--orange); }
+.resumen { font-size: 12px; color: var(--text-soft); margin: 4px 2px 10px; }
+.pedido { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+.top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.cod { font-weight: 800; font-size: 15px; word-break: break-all; }
+.det { font-size: 13px; color: var(--text-soft); margin-top: 3px; }
+.badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.badge.pendiente { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid var(--amber); }
+.badge.en_camino { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid var(--blue); }
+.badge.entregado { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid var(--green); }
+.badge.no_entregado { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid var(--red); }
+.badge.devuelto { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid var(--purple); }
+.acciones { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.acciones a, .acciones button { flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px; background: var(--surface-alt); color: #fff; font: 700 13px 'Plus Jakarta Sans', sans-serif; text-decoration: none; border: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
+.acciones .principal { background: var(--orange); border-color: var(--orange); }
+.acciones .wsp { background: rgba(37,211,102,.15); border-color: #25d366; }
+.msg { text-align: center; color: var(--text-soft); font-size: 14px; padding: 40px 16px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed var(--border); }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.8); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
+.overlay.visible { display: flex; }
+.caja { background: var(--surface); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 20px; border: 2px solid var(--orange); }
+@media (min-width: 540px) { .overlay { align-items: center; } .caja { border-radius: 18px; } }
+.caja h3 { display: flex; justify-content: space-between; align-items: center; font-size: 16px; margin-bottom: 10px; }
+.caja h3 button { width: 30px; height: 30px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); color: var(--text-soft); cursor: pointer; }
+.caja img { width: 100%; border-radius: 12px; margin-top: 10px; display: block; border: 1px solid var(--border); }
+.caja img.firma { background: #fff; }
+.tit { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-soft); margin-top: 14px; }
+@media (max-width: 380px) { .kpi .num { font-size: 18px; } .kpi .lbl { font-size: 10px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="marca">
+    <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" alt="Transporte Leen">
+    <h1 id="titulo">Mis envíos<small id="subtitulo">Transporte Leen</small></h1>
+  </div>
+  <button id="salir">Salir</button>
+</header>
+
+<main>
+  <div class="kpis" id="kpis"></div>
+  <input type="search" class="buscar" id="buscar" placeholder="🔍 Buscar por código, nombre o dirección" autocomplete="off">
+  <div class="resumen" id="resumen"></div>
+  <div id="lista"><div class="msg">Cargando tus envíos...</div></div>
+</main>
+
+<div class="overlay" id="modalPrueba">
+  <div class="caja">
+    <h3><span id="pruebaTitulo">Prueba de entrega</span><button id="cerrarPrueba" aria-label="Cerrar">✕</button></h3>
+    <div id="pruebaCuerpo"></div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
+  authDomain: "app-repartos-f3fda.firebaseapp.com",
+  projectId: "app-repartos-f3fda",
+  storageBucket: "app-repartos-f3fda.firebasestorage.app",
+  messagingSenderId: "831323740955",
+  appId: "1:831323740955:web:60d96b496aefb0047151be"
+});
+var auth = firebase.auth(), db = firebase.firestore();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+var $ = function (id) { return document.getElementById(id); };
+var perfil = null, esTienda = false;
+var pedidos = [];
+var filtroEstado = "", filtroTexto = "";
+
+function esc(t) { var d = document.createElement("div"); d.textContent = t == null ? "" : String(t); return d.innerHTML; }
+function sinAcentos(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+function aviso(t) { $("lista").innerHTML = "<div class='msg'>" + esc(t) + "</div>"; }
+function fecha(ts) { return ts && ts.toDate ? ts.toDate().toLocaleString("es-CL", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""; }
+
+$("salir").addEventListener("click", function () { auth.signOut().then(function () { location.href = "login.html"; }); });
+
+auth.onAuthStateChanged(function (u) {
+  if (!u) { location.href = "login.html?rol=cliente"; return; }
+  db.collection("usuarios").doc(u.uid).get().then(function (d) {
+    var p = d.exists ? d.data() : null;
+    if (!p || p.activo === false) { auth.signOut().then(function () { location.href = "login.html?rol=cliente"; }); return; }
+    if (p.rol === "admin") { location.href = "panel-admin.html"; return; }
+    if (p.rol === "repartidor") { location.href = "dashboard-repartidor.html"; return; }
+    perfil = p;
+    esTienda = p.rol === "vendedor";
+    var campo = esTienda ? "vendedor_id" : "cliente_id";
+    var id = esTienda ? p.vendedorId : p.clienteId;
+    $("titulo").innerHTML = (esTienda ? "Envíos de mi tienda" : "Mis pedidos") + "<small>" + esc(p.nombre || "") + "</small>";
+    if (!id) { aviso("Tu cuenta aún no está vinculada. Avisa a Transporte Leen."); return; }
+    db.collection("Pedidos").where(campo, "==", id).onSnapshot(function (s) {
+      pedidos = [];
+      s.forEach(function (doc) { pedidos.push({ id: doc.id, data: doc.data() }); });
+      pedidos.sort(function (a, b) {
+        var fa = a.data.fecha_recepcion && a.data.fecha_recepcion.toMillis ? a.data.fecha_recepcion.toMillis() : 0;
+        var fb = b.data.fecha_recepcion && b.data.fecha_recepcion.toMillis ? b.data.fecha_recepcion.toMillis() : 0;
+        return fb - fa;
+      });
+      pintar();
+    }, function (e) { aviso("No se pudieron cargar tus envíos: " + e.message); });
+  }).catch(function (e) { aviso("Error al leer tu cuenta: " + e.message); });
+});
+
+var KPIS = [
+  { estado: "pendiente", lbl: "En bodega" },
+  { estado: "en_camino", lbl: "En camino" },
+  { estado: "entregado", lbl: "Entregados" },
+  { estado: "no_entregado", lbl: "No entregados" },
+  { estado: "devuelto", lbl: "Devueltos" }
+];
+
+function pintar() {
+  var n = {};
+  pedidos.forEach(function (it) { var e = it.data.estado || "pendiente"; n[e] = (n[e] || 0) + 1; });
+  var kp = $("kpis");
+  kp.innerHTML = "";
+  KPIS.forEach(function (k) {
+    var b = document.createElement("button");
+    b.className = "kpi " + k.estado + (filtroEstado === k.estado ? " activo" : "");
+    b.innerHTML = "<div class='num'>" + (n[k.estado] || 0) + "</div><div class='lbl'>" + k.lbl + "</div>";
+    b.addEventListener("click", function () { filtroEstado = filtroEstado === k.estado ? "" : k.estado; pintar(); });
+    kp.appendChild(b);
+  });
+
+  var palabras = sinAcentos(filtroTexto).split(/\s+/).filter(Boolean);
+  var visibles = pedidos.filter(function (it) {
+    var p = it.data;
+    if (filtroEstado && (p.estado || "pendiente") !== filtroEstado) return false;
+    if (!palabras.length) return true;
+    var t = sinAcentos([it.id, p.codigo_barra, p.cliente_nombre, p.direccion_entrega].join(" "));
+    return palabras.every(function (w) { return t.indexOf(w) > -1; });
+  });
+  $("resumen").textContent = "Mostrando " + visibles.length + " de " + pedidos.length + (pedidos.length === 1 ? " envío" : " envíos") + (filtroEstado ? " · toca el indicador otra vez para ver todos" : "");
+
+  var lista = $("lista");
+  lista.innerHTML = "";
+  if (!pedidos.length) { aviso(esTienda ? "Aún no hay paquetes de tu tienda registrados." : "Aún no tienes pedidos registrados."); return; }
+  if (!visibles.length) { lista.innerHTML = "<div class='msg'>No hay envíos con este filtro.</div>"; return; }
+  visibles.forEach(function (it) { lista.appendChild(tarjeta(it)); });
+}
+
+function tarjeta(it) {
+  var p = it.data, est = p.estado || "pendiente";
+  var div = document.createElement("div");
+  div.className = "pedido";
+  var enlace = p.tracking_id ? Seguimiento.url(p.tracking_id) : "";
+  var tel = String(p.cliente_telefono || "").replace(/\D/g, "");
+  var extra = "";
+  if (est === "en_camino" && p.repartidor_nombre) extra = "<div class='det'>🚚 Va en camino con " + esc(Seguimiento.primerNombre(p.repartidor_nombre)) + "</div>";
+  if (est === "entregado" && p.entrega) extra = "<div class='det' style='color:#10b981'>✅ Recibió: " + esc(p.entrega.recibe_nombre || p.entrega.relacion || "registrado") + (p.entrega.recibe_nombre && p.entrega.relacion ? " (" + esc(p.entrega.relacion) + ")" : "") + (p.fecha_entrega ? " · " + esc(fecha(p.fecha_entrega)) : "") + "</div>";
+  if (est === "no_entregado" && p.no_entrega) extra = "<div class='det' style='color:#f87171'>⚠️ " + esc(p.no_entrega.motivo) + "</div>";
+  if (est === "pendiente" && p.fecha_programada && p.fecha_programada.toDate) extra = "<div class='det' style='color:#60a5fa'>📅 Reprogramado para el " + esc(p.fecha_programada.toDate().toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })) + (p.intentos ? " · intento " + (p.intentos + 1) : "") + "</div>";
+  if (est === "devuelto") extra = "<div class='det' style='color:#a78bfa'>↩️ Devuelto a la tienda" + (p.devolucion && p.devolucion.nota ? ": " + esc(p.devolucion.nota) : "") + "</div>";
+
+  div.innerHTML =
+    "<div class='top'><span class='cod'>📦 " + esc(p.codigo_barra || it.id) + "</span><span class='badge " + esc(est) + "'>" + esc(Seguimiento.ESTADOS[est] || est) + "</span></div>" +
+    (esTienda ? "<div class='det'>Para: " + esc(p.cliente_nombre || "-") + "</div>" : "") +
+    "<div class='det'>📍 " + esc(p.direccion_entrega || "-") + "</div>" +
+    (p.fecha_recepcion ? "<div class='det'>📥 Recibido " + esc(fecha(p.fecha_recepcion)) + "</div>" : "") +
+    extra +
+    "<div class='acciones'>" +
+      (enlace ? "<a class='principal' href='" + esc(enlace) + "' target='_blank' rel='noopener'>" + (est === "en_camino" ? "📍 Ver en el mapa" : "🔗 Seguimiento") + "</a>" : "") +
+      (est === "entregado" && p.tracking_id ? "<button data-prueba='1'>🧾 Prueba</button>" : "") +
+      (esTienda && enlace && tel ? "<a class='wsp' target='_blank' rel='noopener' href='https://wa.me/" + tel + "?text=" + encodeURIComponent("Hola " + Seguimiento.primerNombre(p.cliente_nombre) + ", puedes seguir tu pedido " + (p.codigo_barra || "") + " de Transporte Leen aquí: " + enlace) + "'>💬 Enviar al comprador</a>" : "") +
+    "</div>";
+  var bp = div.querySelector("[data-prueba]");
+  if (bp) bp.addEventListener("click", function () { verPrueba(p.tracking_id, p.codigo_barra || it.id); });
+  return div;
+}
+
+function verPrueba(token, codigo) {
+  $("pruebaTitulo").textContent = "🧾 Prueba de entrega · " + codigo;
+  $("pruebaCuerpo").innerHTML = "<div class='det'>Cargando...</div>";
+  $("modalPrueba").classList.add("visible");
+  db.collection("evidencias").doc(token).get().then(function (d) {
+    if (!d.exists) { $("pruebaCuerpo").innerHTML = "<div class='det'>Este pedido no tiene foto ni firma registrada.</div>"; return; }
+    var e = d.data(), cuerpo = $("pruebaCuerpo");
+    cuerpo.innerHTML = "<div class='det'>📅 " + esc(fecha(e.fecha)) + "</div><div class='det'>🙋 Recibió: " + esc(e.recibe_nombre || "-") + (e.relacion ? " (" + esc(e.relacion) + ")" : "") + "</div>";
+    [["foto", "Foto", ""], ["firma", "Firma", "firma"]].forEach(function (x) {
+      if (!e[x[0]]) return;
+      cuerpo.insertAdjacentHTML("beforeend", "<div class='tit'>" + x[1] + "</div>");
+      var img = document.createElement("img");
+      img.src = e[x[0]];
+      img.alt = x[1];
+      if (x[2]) img.className = x[2];
+      cuerpo.appendChild(img);
+    });
+  }).catch(function (e) { $("pruebaCuerpo").innerHTML = "<div class='det'>No se pudo cargar: " + esc(e.message) + "</div>"; });
+}
+$("cerrarPrueba").addEventListener("click", function () { $("modalPrueba").classList.remove("visible"); });
+
+var temporizador = null;
+$("buscar").addEventListener("input", function (e) {
+  clearTimeout(temporizador);
+  temporizador = setTimeout(function () { filtroTexto = e.target.value; pintar(); }, 200);
+});
+</script>
+</body>
+</html>

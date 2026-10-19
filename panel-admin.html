@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Librería HTML5-QRcode para la cámara -->
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
 <style>
 :root {
   --bg: #0b192c;
@@ -54,6 +54,66 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 .badge.no_entregado { background: var(--fail-soft); color: var(--fail); border: 1px solid var(--fail); }
 .badge.devuelto { background: var(--back-soft); color: var(--back); border: 1px solid var(--back); }
 .btn-editar { margin-top: 12px; width: 100%; padding: 10px; background: var(--surface-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.oculto { display: none !important; }
+.aviso-form { background: rgba(16,185,129,0.15); border: 1px solid var(--ok); color: #fff; font-size: 12px; font-weight: 600; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; }
+.ocr-panel { background: var(--bg); border: 1px dashed var(--gold); border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+.btn-ocr { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 10px; background: var(--gold-soft); border: 1px solid var(--gold); color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; }
+.btn-ocr.pulso { animation: pulsoOcr 1.4s infinite; }
+.btn-ocr.cargando { opacity: .6; pointer-events: none; }
+@keyframes pulsoOcr { 0% { box-shadow: 0 0 0 0 rgba(255,101,0,.6); } 70% { box-shadow: 0 0 0 10px rgba(255,101,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,101,0,0); } }
+.ocr-estado { font-size: 12px; color: var(--text-soft); margin-top: 8px; }
+.ocr-panel details { margin-top: 8px; font-size: 12px; color: var(--text-soft); }
+.ocr-panel pre { white-space: pre-wrap; font-size: 11px; background: rgba(255,255,255,0.04); padding: 8px; border-radius: 8px; max-height: 160px; overflow: auto; }
+.autollenado { border-color: var(--gold) !important; box-shadow: 0 0 0 3px rgba(255,101,0,0.25); transition: box-shadow .3s; }
+.cliente-nuevo { display: grid; gap: 8px; margin-top: 8px; }
+.cliente-nuevo input { width: 100%; padding: 11px; border: 1px solid var(--gold); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); }
+.prueba-tit { font-size: 12px; font-weight: 800; color: var(--text-soft); margin: 14px 0 6px; text-transform: uppercase; }
+.prueba-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; }
+.prueba-img.firma { background: #fff; }
+.fila-botones { display: flex; gap: 8px; }
+/* Indicadores y filtros de pedidos */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 8px; text-align: center; cursor: pointer; font-family: inherit; color: var(--text); }
+.kpi .num { font-size: 22px; font-weight: 800; line-height: 1.1; }
+.kpi .lbl { font-size: 11px; color: var(--text-soft); font-weight: 700; margin-top: 2px; }
+.kpi.activo { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,101,0,0.35); }
+.kpi.k-pend .num { color: #f59e0b; } .kpi.k-camino .num { color: var(--pink-deep); } .kpi.k-ok .num { color: var(--ok); } .kpi.k-fail .num { color: #f87171; }
+.filtros input, .filtros select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text); }
+.filtros-fila { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; }
+.btn-carga { width: 100%; margin-top: 10px; padding: 11px; border-radius: 10px; border: 1px solid var(--pink); background: var(--pink-soft); color: #fff; font: 700 13px inherit; font-family: inherit; cursor: pointer; }
+.resumen-filtro { font-size: 12px; color: var(--text-soft); margin: 10px 2px; display: flex; justify-content: space-between; gap: 8px; }
+.resumen-filtro a { color: var(--gold); font-weight: 700; text-decoration: none; cursor: pointer; }
+.btn-historial { width: 100%; margin-top: 10px; padding: 11px; border-radius: 10px; border: 1px dashed var(--gold); background: none; color: #fff; font-family: inherit; font-weight: 700; cursor: pointer; }
+/* Reintentos y devoluciones */
+.fila-botones .btn-carga { flex: 1; }
+.resolver { margin-top: 10px; padding: 10px; border-radius: 10px; background: var(--fail-soft); border: 1px solid var(--fail); }
+.resolver-tit { font-size: 12px; font-weight: 800; color: #fca5a5; }
+.btn-resolver { flex: 1; margin-top: 8px; padding: 10px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt); color: #fff; font: 700 13px inherit; font-family: inherit; cursor: pointer; }
+.btn-resolver.devolver { border-color: var(--back); }
+.btn-resolver.sugerido { background: var(--back); border-color: var(--back); }
+.chips-fecha { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.chips-fecha button { padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-soft); font: 700 12px inherit; font-family: inherit; cursor: pointer; }
+.chips-fecha button.activo { background: var(--gold); border-color: var(--gold); color: #fff; }
+input[type=date] { color-scheme: dark; }
+/* Usuarios */
+.rol-badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; border: 1px solid var(--border); background: var(--surface-alt); white-space: nowrap; }
+.registro.inactivo { opacity: .55; }
+.ayuda-modal { font-size: 13px; color: var(--text-soft); margin: -6px 0 14px; }
+.ayuda-campo { font-size: 11px; color: var(--text-soft); margin-top: 4px; }
+.error-modal { background: var(--fail-soft); border: 1px solid var(--fail); color: #fca5a5; font-size: 13px; padding: 10px; border-radius: 10px; margin-bottom: 8px; }
+.aviso-usuarios { font-size: 13px; color: var(--text-soft); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+/* Código manual / lector USB y modo carga */
+.codigo-manual { display: flex; gap: 6px; margin-top: 10px; }
+.codigo-manual input { flex: 1; min-width: 0; padding: 11px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); }
+.codigo-manual button { padding: 0 16px; border-radius: 10px; border: none; background: var(--gold); color: #fff; font-weight: 800; font-family: inherit; cursor: pointer; }
+.lector-carga { width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+.carga-resumen { font-size: 13px; font-weight: 700; margin: 12px 0 8px; }
+.carga-lista { list-style: none; padding: 0; margin: 0; max-height: 240px; overflow-y: auto; }
+.carga-lista li { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; padding: 8px 10px; border-radius: 10px; margin-bottom: 6px; background: var(--bg); border: 1px solid var(--border); }
+.carga-lista li.ok { border-color: var(--ok); } .carga-lista li.warn { border-color: #f59e0b; } .carga-lista li.err { border-color: var(--fail); }
+.carga-lista small { display: block; color: var(--text-soft); }
+.fila-botones .btn-editar { flex: 1; }
+.btn-seguimiento { flex: 1; margin-top: 12px; padding: 10px; background: rgba(59,130,246,0.2); color: #fff; border: 1px solid var(--pink); border-radius: 8px; font-size: 13px; font-weight: 700; text-align: center; text-decoration: none; }
 .vacio { text-align: center; color: var(--text-soft); font-size: 13px; padding: 30px 0; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed var(--border); }
 .fab { position: fixed; right: 20px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--gold-deep); color: #fff; border: none; font-size: 26px; box-shadow: 0 4px 16px rgba(255,101,0,0.5); z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; }
 .fab-camara { right: 88px; background: var(--surface); border: 2px solid var(--gold); font-size: 22px; }
@@ -90,6 +150,28 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 <button data-tipo="clientes">Clientes</button>
 <button data-tipo="vendedores">Vendedores</button>
 <button data-tipo="repartidores">Repartidores</button>
+<button data-tipo="usuarios">Usuarios</button>
+</div>
+<div id="barraPedidos">
+<div class="kpis" id="kpis"></div>
+<div class="filtros">
+<input type="search" id="buscarPedido" placeholder="🔍 Buscar código, cliente, dirección, repartidor..." autocomplete="off">
+<div class="filtros-fila">
+<select id="filtroEstado" aria-label="Filtrar por estado"></select>
+<select id="filtroRepartidor" aria-label="Filtrar por repartidor"></select>
+<select id="filtroRango" aria-label="Rango de fechas">
+<option value="1">Hoy</option>
+<option value="7" selected>Últimos 7 días</option>
+<option value="30">Últimos 30 días</option>
+<option value="90">Últimos 90 días</option>
+</select>
+</div>
+</div>
+<div class="fila-botones">
+<button class="btn-carga" id="btnModoCarga">🚚 Cargar paquetes</button>
+<button class="btn-carga" id="btnReportes">📊 Reportes Excel</button>
+</div>
+<div class="resumen-filtro" id="resumenFiltro"></div>
 </div>
 <div id="listaRegistros"></div>
 </div>
@@ -104,7 +186,96 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 <h3>Escaner de Recepción <button class="btn-cerrar" id="cerrarEscanerAdmin">✕</button></h3>
 <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 12px;">Apunta la cámara al código de la etiqueta.</p>
 <div id="reader-admin" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000;"></div>
+<form class="codigo-manual" id="formCodigoCheckin">
+<input type="text" id="codigoCheckin" placeholder="o escribe / usa lector USB" autocomplete="off">
+<button type="submit">OK</button>
+</form>
 <button class="btn-eliminar" id="btnDetenerEscaner" style="margin-top: 15px;">Cerrar Cámara</button>
+</div>
+</div>
+
+<!-- Modal de prueba de entrega -->
+<div id="modalPrueba" class="modal-overlay oculto">
+<div class="modal-caja">
+<h3><span id="tituloPrueba">Prueba de entrega</span><button class="btn-cerrar" onclick="document.getElementById('modalPrueba').classList.add('oculto')">✕</button></h3>
+<div id="cuerpoPrueba"></div>
+</div>
+</div>
+
+<!-- Modal: nuevo usuario (cuenta de acceso) -->
+<div id="modalUsuario" class="modal-overlay oculto">
+<div class="modal-caja">
+<h3>Nueva cuenta de acceso<button class="btn-cerrar" id="cerrarUsuario">✕</button></h3>
+<p class="ayuda-modal">La persona recibirá un correo para crear su propia contraseña.</p>
+<div class="campo-form"><label>Tipo de cuenta</label>
+<select id="usuRol">
+<option value="repartidor">🚚 Repartidor</option>
+<option value="vendedor">🏪 Tienda (vendedor)</option>
+<option value="cliente">🙋 Cliente (destinatario)</option>
+</select></div>
+<div class="campo-form"><label>Nombre</label><input type="text" id="usuNombre" autocomplete="off"></div>
+<div class="campo-form"><label>Correo electrónico</label><input type="email" id="usuEmail" autocomplete="off"></div>
+<div class="campo-form"><label id="usuVinculoLabel">Ficha vinculada</label><select id="usuVinculo"></select>
+<div class="ayuda-campo" id="usuVinculoAyuda"></div></div>
+<div class="campo-form" id="usuTelefonoCampo"><label>Teléfono (ej: 56912345678)</label><input type="tel" id="usuTelefono" autocomplete="off"></div>
+<div id="usuError" class="error-modal oculto"></div>
+<button class="btn-guardar" id="btnCrearUsuario">Crear cuenta y enviar invitación</button>
+<button class="btn-texto" id="btnCancelarUsuario">Cancelar</button>
+</div>
+</div>
+
+<!-- Modal: modo carga (asignar paquetes a un repartidor escaneando) -->
+<div id="modalCarga" class="modal-overlay oculto">
+<div class="modal-caja">
+<h3>🚚 Cargar paquetes<button class="btn-cerrar" id="cerrarCarga">✕</button></h3>
+<div class="campo-form"><label>Repartidor que se lleva los paquetes</label><select id="cargaRepartidor"></select></div>
+<div id="reader-carga" class="lector-carga"></div>
+<button class="btn-guardar" id="btnCamaraCarga">📷 Empezar a escanear</button>
+<form class="codigo-manual" id="formCodigoCarga">
+<input type="text" id="codigoCarga" placeholder="o escribe / usa lector USB" autocomplete="off">
+<button type="submit">OK</button>
+</form>
+<div class="carga-resumen" id="cargaResumen">Elige un repartidor y escanea sus paquetes uno tras otro.</div>
+<ul class="carga-lista" id="cargaLista"></ul>
+</div>
+</div>
+
+<!-- Modal: reprogramar un pedido no entregado -->
+<div id="modalReprogramar" class="modal-overlay oculto">
+<div class="modal-caja">
+<h3>🔁 Reprogramar entrega<button class="btn-cerrar" id="cerrarReprogramar">✕</button></h3>
+<p class="ayuda-modal" id="reprogramarInfo"></p>
+<div class="campo-form"><label>¿Cuándo?</label>
+<div class="chips-fecha" id="chipsFecha">
+<button type="button" data-dias="0">Hoy</button>
+<button type="button" data-dias="1">Mañana</button>
+<button type="button" data-dias="2">Pasado mañana</button>
+</div>
+<input type="date" id="reprogramarFecha"></div>
+<div class="campo-form"><label>Repartidor</label><select id="reprogramarRepartidor"></select></div>
+<div class="campo-form"><label>Nota para el repartidor (opcional)</label><input type="text" id="reprogramarNota" placeholder="Ej: llamar antes, entregar después de las 18:00"></div>
+<button class="btn-guardar" id="btnGuardarReprogramar">Reprogramar entrega</button>
+<button class="btn-texto" id="btnCancelarReprogramar">Cancelar</button>
+</div>
+</div>
+
+<!-- Modal: reportes en Excel -->
+<div id="modalReportes" class="modal-overlay oculto">
+<div class="modal-caja">
+<h3>📊 Reportes en Excel<button class="btn-cerrar" id="cerrarReportes">✕</button></h3>
+<p class="ayuda-modal">Incluye resumen, cobro por tienda, pago por repartidor y el detalle de cada paquete.</p>
+<div class="chips-fecha" id="chipsPeriodo">
+<button type="button" data-periodo="semana">Esta semana</button>
+<button type="button" data-periodo="mes">Este mes</button>
+<button type="button" data-periodo="mes_anterior">Mes anterior</button>
+</div>
+<div class="filtros-fila" style="grid-template-columns:1fr 1fr">
+<div class="campo-form"><label>Desde</label><input type="date" id="repDesde"></div>
+<div class="campo-form"><label>Hasta</label><input type="date" id="repHasta"></div>
+</div>
+<div class="aviso-usuarios" id="repTarifas"></div>
+<div id="repEstado" class="ocr-estado"></div>
+<button class="btn-guardar" id="btnDescargarReporte">⬇️ Descargar Excel</button>
 </div>
 </div>
 
@@ -122,6 +293,8 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="seguimiento-comun.js"></script>
+<script src="etiquetas.js"></script>
 <script>
 var firebaseConfig = {
 apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
@@ -134,6 +307,9 @@ appId: "1:831323740955:web:60d96b496aefb0047151be"
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 var auth = firebase.auth();
+// Funciona con mala señal en bodega: los cambios se guardan y se envían al volver la conexión.
+db.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.warn("Sin modo offline:", e.code); });
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function() {});
 
 function esc(t) {
   var d = document.createElement("div");
@@ -166,6 +342,9 @@ titulo: "vendedor",
 campos: [
 { clave: "nombre", etiqueta: "Nombre", tipo: "text", requerido: true },
 { clave: "telefono", etiqueta: "Teléfono (con código de país, ej: 56912345678)", tipo: "tel", requerido: true },
+{ clave: "ml_sender_id", etiqueta: "ID de vendedor Mercado Libre (se completa solo al escanear)", tipo: "text" },
+{ clave: "tarifa", etiqueta: "Tarifa por paquete entregado ($)", tipo: "number" },
+{ clave: "tarifa_devolucion", etiqueta: "Tarifa por paquete devuelto ($, opcional)", tipo: "number" },
 { clave: "notas", etiqueta: "Notas", tipo: "textarea" }
 ]
 },
@@ -175,7 +354,8 @@ titulo: "repartidor",
 campos: [
 { clave: "nombre", etiqueta: "Nombre", tipo: "text", requerido: true },
 { clave: "telefono", etiqueta: "Teléfono", tipo: "tel" },
-{ clave: "vehiculo", etiqueta: "Vehículo", tipo: "text" }
+{ clave: "vehiculo", etiqueta: "Vehículo", tipo: "text" },
+{ clave: "pago_entrega", etiqueta: "Pago por entrega realizada ($)", tipo: "number" }
 ]
 },
 pedidos: {
@@ -185,6 +365,7 @@ campos: [
 { clave: "codigo_barra", etiqueta: "Código de barra / QR", tipo: "text", requerido: true },
 { clave: "cliente_id", etiqueta: "Cliente", tipo: "select-clientes", requerido: true },
 { clave: "direccion_entrega", etiqueta: "Dirección de entrega", tipo: "text", requerido: true },
+{ clave: "referencia", etiqueta: "Referencia para el repartidor (depto, casa, indicaciones)", tipo: "text" },
 { clave: "vendedor_id", etiqueta: "Vendedor", tipo: "select-vendedores", requerido: true },
 { clave: "repartidor_id", etiqueta: "Repartidor", tipo: "select-repartidores" },
 { clave: "estado", etiqueta: "Estado", tipo: "select-estado", requerido: true }
@@ -192,25 +373,85 @@ campos: [
 }
 };
 
-var cache = { clientes: [], vendedores: [], repartidores: [], pedidos: [] };
+var cache = { clientes: [], vendedores: [], repartidores: [], pedidos: [], usuarios: [] };
 var tipoActivo = "pedidos";
 var editandoId = null;
-var conteoConectado = 0;
-var totalColecciones = 4;
+var uidActual = null;
+
+function pintarEstadoConexion() {
+document.getElementById("estadoConexion").textContent =
+"Conectado. " + cache.pedidos.length + " pedidos cargados (activos + " + document.getElementById("filtroRango").selectedOptions[0].text.toLowerCase() + "), " +
+cache.clientes.length + " clientes, " + cache.vendedores.length + " vendedores, " + cache.repartidores.length + " repartidores.";
+}
 
 function suscribirColeccion(tipo) {
-var nombreColeccion = configEntidades[tipo].coleccion;
+var nombreColeccion = tipo === "usuarios" ? "usuarios" : configEntidades[tipo].coleccion;
 db.collection(nombreColeccion).onSnapshot(function(snapshot) {
 var registros = [];
 snapshot.forEach(function(doc) { registros.push({ id: doc.id, data: doc.data() }); });
 cache[tipo] = registros;
-if (conteoConectado < totalColecciones) conteoConectado++;
-document.getElementById("estadoConexion").textContent =
-"Conectado. " + cache.clientes.length + " clientes, " + cache.vendedores.length +
-" vendedores, " + cache.repartidores.length + " repartidores, " + cache.pedidos.length + " pedidos.";
-if (tipo === tipoActivo) renderLista();
+pintarEstadoConexion();
+if (tipo === "repartidores") pintarOpcionesRepartidor();
+if (tipo === tipoActivo || tipoActivo === "pedidos" || tipoActivo === "usuarios") renderLista();
 }, function(error) {
 document.getElementById("estadoConexion").textContent = "Error al conectar (" + nombreColeccion + "): " + error.message;
+});
+}
+
+// PEDIDOS: no se descarga todo el historial. Se escuchan dos consultas y se mezclan:
+//  1) los recibidos dentro del rango elegido (hoy / 7 / 30 / 90 días)
+//  2) todos los que siguen activos (pendiente, en camino, no entregado), sin importar la fecha.
+// Los más antiguos se encuentran con «Buscar en todo el historial».
+var pedRecientes = {}, pedActivos = {}, pedHistorial = {};
+var subsPedidos = [];
+
+function aMapa(snap) {
+var m = {};
+snap.forEach(function(doc) { m[doc.id] = doc.data(); });
+return m;
+}
+
+function ms(ts) { return ts && ts.toMillis ? ts.toMillis() : null; }
+
+function mezclarPedidos() {
+var todos = Object.assign({}, pedHistorial, pedRecientes, pedActivos);
+cache.pedidos = Object.keys(todos).map(function(id) { return { id: id, data: todos[id] }; });
+// Más nuevos primero (los recién creados aún sin hora del servidor quedan arriba).
+cache.pedidos.sort(function(a, b) {
+return (ms(b.data.fecha_recepcion) || Date.now()) - (ms(a.data.fecha_recepcion) || Date.now());
+});
+pintarEstadoConexion();
+if (tipoActivo === "pedidos") renderLista();
+}
+
+function suscribirPedidos() {
+subsPedidos.forEach(function(cancelar) { cancelar(); });
+var dias = Number(document.getElementById("filtroRango").value) || 7;
+var desde = new Date();
+desde.setHours(0, 0, 0, 0);
+desde.setDate(desde.getDate() - (dias - 1));
+var alError = function(e) { document.getElementById("estadoConexion").textContent = "Error al cargar pedidos: " + e.message; };
+subsPedidos = [
+db.collection("Pedidos").where("fecha_recepcion", ">=", firebase.firestore.Timestamp.fromDate(desde))
+.onSnapshot(function(s) { pedRecientes = aMapa(s); mezclarPedidos(); }, alError),
+db.collection("Pedidos").where("estado", "in", ["pendiente", "en_camino", "no_entregado"])
+.onSnapshot(function(s) { pedActivos = aMapa(s); mezclarPedidos(); }, alError)
+];
+}
+
+// Busca un pedido por código: primero en lo cargado y, si no está, en todo el historial.
+function buscarPedidoServidor(codigo) {
+var local = buscarPedidoPorCodigo(codigo, null);
+if (local) return Promise.resolve(local);
+return Promise.all([
+db.collection("Pedidos").where("codigo_barra", "==", codigo).limit(1).get(),
+db.collection("Pedidos").doc(codigo.replace(/\//g, "_")).get()
+]).then(function(r) {
+var doc = !r[0].empty ? r[0].docs[0] : (r[1].exists ? r[1] : null);
+if (!doc) return null;
+pedHistorial[doc.id] = doc.data();
+mezclarPedidos();
+return { id: doc.id, data: doc.data() };
 });
 }
 
@@ -219,10 +460,14 @@ if (!u) { location.href = "login.html"; return; }
 db.collection("usuarios").doc(u.uid).get().then(function(d) {
 var p = d.exists ? d.data() : null;
 if (p && p.rol === "admin" && p.activo !== false) {
+uidActual = u.uid;
 document.getElementById("estadoConexion").textContent = "Conectando a Firestore...";
-Object.keys(configEntidades).forEach(suscribirColeccion);
+["clientes", "vendedores", "repartidores", "usuarios"].forEach(suscribirColeccion);
+suscribirPedidos();
 } else if (p && p.rol === "repartidor") {
 location.href = "dashboard-repartidor.html";
+} else if (p && (p.rol === "vendedor" || p.rol === "cliente")) {
+location.href = "portal-cliente.html";
 } else {
 auth.signOut().then(function() { location.href = "login.html"; });
 }
@@ -236,20 +481,46 @@ e.preventDefault();
 auth.signOut().then(function() { location.href = "login.html"; });
 });
 
-document.querySelectorAll(".tabs button").forEach(function(btn) {
-btn.addEventListener("click", function() {
-document.querySelectorAll(".tabs button").forEach(function(b) { b.classList.remove("activo"); });
-btn.classList.add("activo");
-tipoActivo = btn.getAttribute("data-tipo");
-renderLista();
+function activarTab(tipo) {
+document.querySelectorAll(".tabs button").forEach(function(b) {
+b.classList.toggle("activo", b.getAttribute("data-tipo") === tipo);
 });
+tipoActivo = tipo;
+renderLista();
+}
+
+document.querySelectorAll(".tabs button").forEach(function(btn) {
+btn.addEventListener("click", function() { activarTab(btn.getAttribute("data-tipo")); });
 });
 
 function renderLista() {
 var contenedor = document.getElementById("listaRegistros");
-var registros = cache[tipoActivo];
+document.getElementById("barraPedidos").classList.toggle("oculto", tipoActivo !== "pedidos");
+if (tipoActivo === "usuarios") { renderUsuarios(contenedor); return; }
+var registros = tipoActivo === "pedidos" ? filtrarPedidos() : cache[tipoActivo];
 contenedor.innerHTML = "";
+if (tipoActivo === "pedidos") {
+pintarKpis();
+pintarResumenFiltro(registros.length);
+}
 if (!registros || registros.length === 0) {
+if (tipoActivo === "pedidos" && hayFiltros()) {
+contenedor.innerHTML = "<div class='vacio'>No hay pedidos con estos filtros.</div>";
+var texto = filtro.texto.trim();
+if (texto.length >= 3) {
+var b = document.createElement("button");
+b.className = "btn-historial";
+b.textContent = "🔎 Buscar el código «" + texto + "» en todo el historial";
+b.addEventListener("click", function() {
+b.textContent = "Buscando...";
+buscarPedidoServidor(texto).then(function(r) {
+if (!r) b.textContent = "No existe ningún pedido con el código «" + texto + "».";
+}).catch(function(e) { b.textContent = "Error: " + e.message; });
+});
+contenedor.appendChild(b);
+}
+return;
+}
 contenedor.innerHTML = "<div class='vacio'>Todavía no hay " + tipoActivo + ". Toca + o la cámara para agregar el primero.</div>";
 return;
 }
@@ -270,22 +541,71 @@ div.innerHTML =
 "<div class='detalle'>Cliente: " + esc(p.cliente_nombre || (cliente ? cliente.data.nombre : "-")) + "</div>" +
 "<div class='detalle'>Vendedor: " + esc(p.vendedor_nombre || (vendedor ? vendedor.data.nombre : "-")) + "</div>" +
 "<div class='detalle'>Repartidor: " + esc(p.repartidor_nombre || (repartidor ? repartidor.data.nombre : "Sin asignar")) + "</div>" +
+(p.estado === "no_entregado" && p.no_entrega ? "<div class='detalle' style='color:#f87171'>⚠️ " + esc(p.no_entrega.motivo) + (p.no_entrega.nota ? ": " + esc(p.no_entrega.nota) : "") + "</div>" : "") +
+(p.estado === "entregado" && p.entrega ? "<div class='detalle' style='color:#10b981'>✅ Recibió: " + esc(p.entrega.recibe_nombre || p.entrega.relacion || "-") + (p.entrega.recibe_nombre && p.entrega.relacion ? " (" + esc(p.entrega.relacion) + ")" : "") + "</div>" : "") +
+((p.estado || "pendiente") === "pendiente" && p.fecha_programada && p.fecha_programada.toDate ? "<div class='detalle' style='color:#60a5fa'>📅 Reprogramado para el " + esc(p.fecha_programada.toDate().toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })) + "</div>" : "") +
+(p.estado === "devuelto" && p.devolucion ? "<div class='detalle' style='color:#a78bfa'>↩️ Devuelto a la tienda" + (p.devolucion.nota ? ": " + esc(p.devolucion.nota) : "") + "</div>" : "") +
 "</div>" +
 "<span class='badge " + esc(estadoClase) + "'>" + esc(nombresEstado[p.estado] || p.estado || "-") + "</span>" +
 "</div>" +
-"<button class='btn-editar' data-id='" + esc(item.id) + "'>Editar</button>";
+(p.estado === "no_entregado"
+? "<div class='resolver'><div class='resolver-tit'>" + (p.intentos >= 3 ? "⚠️ " + p.intentos + " intentos fallidos: se sugiere devolver a la tienda" : "Por resolver · intento " + (p.intentos || 1) + " de 3") + "</div>" +
+"<div class='fila-botones'><button class='btn-resolver' data-reprogramar='" + esc(item.id) + "'>🔁 Reprogramar</button>" +
+"<button class='btn-resolver devolver" + (p.intentos >= 3 ? " sugerido" : "") + "' data-devolver='" + esc(item.id) + "'>↩️ Devolver a tienda</button></div></div>"
+: "") +
+(p.tracking_id
+? "<div class='fila-botones'><button class='btn-editar' data-id='" + esc(item.id) + "'>Editar</button>" +
+(p.estado === "entregado" && p.entrega
+? "<button class='btn-seguimiento btn-prueba' data-token='" + esc(p.tracking_id) + "' data-cod='" + esc(p.codigo_barra || item.id) + "'>🧾 Prueba</button>"
+: "") +
+"<a class='btn-seguimiento' href='" + esc(Seguimiento.url(p.tracking_id)) + "' target='_blank' rel='noopener'>" +
+(p.estado === "en_camino" ? "📍 Ver en vivo" : "🔗 Seguimiento") + "</a></div>"
+: "<button class='btn-editar' data-id='" + esc(item.id) + "'>Editar</button>");
 } else {
 div.innerHTML =
 "<div class='nombre'>" + esc(p.nombre || "-") + "</div>" +
 "<div class='detalle'>" + esc(p.telefono || "Sin teléfono") + "</div>" +
 (p.direccion ? "<div class='detalle'>" + esc(p.direccion) + "</div>" : "") +
 (p.vehiculo ? "<div class='detalle'>Vehículo: " + esc(p.vehiculo) + "</div>" : "") +
+(p.tarifa ? "<div class='detalle'>💲 Tarifa: " + esc(formatoPesos(p.tarifa)) + " por entrega" + (p.tarifa_devolucion ? " · " + esc(formatoPesos(p.tarifa_devolucion)) + " por devolución" : "") + "</div>" : "") +
+(p.pago_entrega ? "<div class='detalle'>💲 Pago: " + esc(formatoPesos(p.pago_entrega)) + " por entrega</div>" : "") +
 "<button class='btn-editar' data-id='" + esc(item.id) + "'>Editar</button>";
 }
 contenedor.appendChild(div);
 });
 contenedor.querySelectorAll(".btn-editar").forEach(function(btn) {
 btn.addEventListener("click", function() { abrirForm(btn.getAttribute("data-id")); });
+});
+contenedor.querySelectorAll(".btn-prueba").forEach(function(btn) {
+btn.addEventListener("click", function() { verPrueba(btn.getAttribute("data-token"), btn.getAttribute("data-cod")); });
+});
+contenedor.querySelectorAll("[data-reprogramar]").forEach(function(btn) {
+btn.addEventListener("click", function() { abrirReprogramar(btn.getAttribute("data-reprogramar")); });
+});
+contenedor.querySelectorAll("[data-devolver]").forEach(function(btn) {
+btn.addEventListener("click", function() { devolverPedido(btn.getAttribute("data-devolver")); });
+});
+}
+
+// Muestra la foto, firma y quién recibió (colección "evidencias").
+function verPrueba(token, codigo) {
+var modal = document.getElementById("modalPrueba");
+var cuerpo = document.getElementById("cuerpoPrueba");
+document.getElementById("tituloPrueba").textContent = "🧾 Prueba de entrega · " + codigo;
+cuerpo.innerHTML = "<div class='vacio'>Cargando...</div>";
+modal.classList.remove("oculto");
+db.collection("evidencias").doc(token).get().then(function(d) {
+if (!d.exists) { cuerpo.innerHTML = "<div class='vacio'>Este pedido no tiene foto ni firma registrada.</div>"; return; }
+var e = d.data();
+var fecha = e.fecha && e.fecha.toDate ? e.fecha.toDate().toLocaleString("es-CL") : "";
+var html = "<div class='detalle'>📅 " + esc(fecha) + "</div>" +
+"<div class='detalle'>🙋 Recibió: " + esc(e.recibe_nombre || "-") + (e.relacion ? " (" + esc(e.relacion) + ")" : "") + "</div>";
+if (e.ubicacion) html += "<div class='detalle'>📍 <a style='color:#60a5fa' target='_blank' rel='noopener' href='https://www.google.com/maps/search/?api=1&query=" + e.ubicacion.lat + "," + e.ubicacion.lng + "'>Ver lugar donde se marcó la entrega</a></div>";
+if (e.foto) html += "<div class='prueba-tit'>Foto</div><img class='prueba-img' src='" + esc(e.foto) + "' alt='Foto de la entrega'>";
+if (e.firma) html += "<div class='prueba-tit'>Firma</div><img class='prueba-img firma' src='" + esc(e.firma) + "' alt='Firma'>";
+cuerpo.innerHTML = html;
+}).catch(function(err) {
+cuerpo.innerHTML = "<div class='vacio'>No se pudo cargar: " + esc(err.message) + "</div>";
 });
 }
 
@@ -312,11 +632,11 @@ alert("Cargando librería de escáner, intenta de nuevo en un segundo.");
 return;
 }
 if (!html5QrCodeAdmin) {
-html5QrCodeAdmin = new Html5Qrcode("reader-admin");
+html5QrCodeAdmin = new Html5Qrcode("reader-admin", Etiquetas.configLector());
 }
 html5QrCodeAdmin.start(
 { facingMode: "environment" },
-{ fps: 10, qrbox: { width: 250, height: 150 } },
+Etiquetas.opcionesEscaner(),
 function(decodedText) {
 detenerYCerrarEscaner();
 procesarCodigoEscaneadoAdmin(decodedText);
@@ -327,6 +647,17 @@ alert("No se pudo iniciar la cámara: " + err);
 });
 }, 300);
 }
+
+// Código escrito a mano o con lector USB/Bluetooth (funcionan como teclado + Enter).
+document.getElementById("formCodigoCheckin").addEventListener("submit", function(e) {
+e.preventDefault();
+var campo = document.getElementById("codigoCheckin");
+var texto = campo.value.trim();
+if (!texto) return;
+campo.value = "";
+detenerYCerrarEscaner();
+procesarCodigoEscaneadoAdmin(texto);
+});
 
 function detenerYCerrarEscaner() {
 if (html5QrCodeAdmin && html5QrCodeAdmin.isScanning) {
@@ -340,37 +671,158 @@ document.getElementById("modalEscanerAdmin").classList.add("oculto");
 }
 }
 
-function procesarCodigoEscaneadoAdmin(codigo) {
-var existe = cache.pedidos.some(function(p) { return p.id === codigo || p.data.codigo_barra === codigo; });
-if (existe) {
-alert("⚠️ El paquete con código " + codigo + " ya se encuentra registrado.");
+function buscarPedidoPorCodigo(codigo, excluirId) {
+return cache.pedidos.find(function(p) {
+return p.id !== excluirId && (p.id === codigo || p.data.codigo_barra === codigo);
+}) || null;
+}
+
+// CHECK-IN: el escáner lee la etiqueta (QR de Mercado Libre, QR propio o código de barras),
+// reconoce el vendedor y abre el formulario prellenado. El nombre y la dirección
+// se leen después con una foto de la etiqueta (OCR), porque el QR de Mercado Libre no los trae.
+function procesarCodigoEscaneadoAdmin(textoLeido) {
+var leido = Etiquetas.parsearCodigo(textoLeido);
+var codigo = leido.codigo;
+if (!codigo) return;
+buscarPedidoServidor(codigo).catch(function() { return null; }).then(function(existente) {
+abrirCheckin(leido, existente);
+});
+}
+
+function abrirCheckin(leido, existente) {
+var codigo = leido.codigo;
+if (existente) {
+if (confirm("⚠️ El paquete " + codigo + " ya está registrado (" + (nombresEstado[existente.data.estado] || "Pendiente") + "). ¿Quieres abrirlo?")) {
+activarTab("pedidos");
+abrirForm(existente.id);
+}
 return;
 }
-db.collection("Pedidos").doc(codigo).set({
+var vendedor = leido.ml_sender_id ? cache.vendedores.find(function(v) { return String(v.data.ml_sender_id || "") === leido.ml_sender_id; }) : null;
+activarTab("pedidos");
+abrirForm(null, {
 codigo_barra: codigo,
-estado: "pendiente",
-fecha_recepcion: firebase.firestore.FieldValue.serverTimestamp(),
-creado_por: "Administrador (Escáner)"
-}).then(function() {
-alert("✅ ¡Paquete " + codigo + " registrado con éxito!");
-}).catch(function(err) {
-alert("Error al registrar el paquete: " + err.message);
+vendedor_id: vendedor ? vendedor.id : "",
+direccion_entrega: Etiquetas.direccionCompleta(leido.datos),
+creado_por: "Check-in (escáner)",
+origen: leido.origen,
+ml_sender_id: leido.ml_sender_id,
+cliente_detectado: { nombre: leido.datos.nombre || "", telefono: leido.datos.telefono || "" }
+});
+var avisos = ["✅ Código leído: " + codigo];
+if (leido.origen === "mercadolibre") avisos.push(vendedor ? "Vendedor reconocido: " + vendedor.data.nombre : "Vendedor de Mercado Libre nuevo: elígelo y la app lo recordará.");
+if (!leido.datos.direccion) avisos.push("Ahora toca «Leer datos de la etiqueta» para completar nombre y dirección.");
+mostrarAvisoForm(avisos.join(" · "), !leido.datos.direccion);
+}
+
+function mostrarAvisoForm(texto, resaltarOcr) {
+var aviso = document.getElementById("avisoForm");
+if (aviso) { aviso.textContent = texto; aviso.classList.remove("oculto"); }
+var btn = document.querySelector(".btn-ocr");
+if (btn) btn.classList.toggle("pulso", !!resaltarOcr);
+}
+
+// --- LECTURA DE LA ETIQUETA (OCR) ---
+
+function normalizarNombre(n) { return Etiquetas.sinAcentos(n).replace(/[^a-z ]/g, "").replace(/\s+/g, " ").trim(); }
+
+// Busca un cliente existente por teléfono o nombre; si no hay, prepara uno nuevo.
+function elegirClienteDetectado(nombre, telefono) {
+var sel = document.getElementById("campo_cliente_id");
+if (!sel || (!nombre && !telefono)) return;
+var tel = Etiquetas.normalizarTelefono(telefono);
+var nom = normalizarNombre(nombre);
+var hallado = cache.clientes.find(function(c) {
+return (tel && Etiquetas.normalizarTelefono(c.data.telefono) === tel) || (nom && normalizarNombre(c.data.nombre) === nom);
+});
+if (hallado) {
+sel.value = hallado.id;
+} else {
+sel.value = "__nuevo__";
+if (nombre) document.getElementById("nuevoClienteNombre").value = nombre;
+if (tel) document.getElementById("nuevoClienteTelefono").value = tel;
+}
+sel.dispatchEvent(new Event("change"));
+marcarAutollenado(sel);
+}
+
+function marcarAutollenado(el) {
+if (!el) return;
+el.classList.add("autollenado");
+setTimeout(function() { el.classList.remove("autollenado"); }, 4000);
+}
+
+function leerEtiqueta(archivo) {
+var estado = document.getElementById("ocrEstado");
+var btn = document.querySelector(".btn-ocr");
+btn.classList.remove("pulso");
+btn.classList.add("cargando");
+estado.textContent = "Cargando lector de texto (la primera vez tarda unos segundos)...";
+Etiquetas.leerTexto(archivo, function(p) {
+estado.textContent = "Leyendo etiqueta... " + Math.round(p * 100) + "%";
+}).then(function(texto) {
+btn.classList.remove("cargando");
+document.getElementById("ocrTexto").textContent = texto || "(sin texto)";
+document.getElementById("ocrDetalle").classList.remove("oculto");
+var d = Etiquetas.extraerDatos(texto);
+var llenados = [];
+var dir = Etiquetas.direccionCompleta(d);
+var campoDir = document.getElementById("campo_direccion_entrega");
+if (dir && campoDir) { campoDir.value = dir; marcarAutollenado(campoDir); llenados.push("dirección"); }
+var campoRef = document.getElementById("campo_referencia");
+if (d.referencia && campoRef && !campoRef.value) { campoRef.value = d.referencia; marcarAutollenado(campoRef); llenados.push("referencia"); }
+if (d.nombre || d.telefono) { elegirClienteDetectado(d.nombre, d.telefono); llenados.push("cliente"); }
+var campoCod = document.getElementById("campo_codigo_barra");
+var alerta = "";
+if (d.envio && campoCod) {
+if (!campoCod.value) { campoCod.value = d.envio; marcarAutollenado(campoCod); llenados.push("código"); }
+else if (campoCod.value.indexOf(d.envio) === -1 && d.envio.indexOf(campoCod.value) === -1) alerta = " ⚠️ El N° de envío impreso (" + d.envio + ") no coincide con el código escaneado: revisa que sea la misma etiqueta.";
+}
+estado.textContent = (llenados.length
+? "✅ Se completó: " + llenados.join(", ") + ". Revisa los datos antes de guardar."
+: "No se reconocieron datos. Intenta con una foto más nítida y de frente, o escríbelos a mano.") + alerta;
+}).catch(function(e) {
+btn.classList.remove("cargando");
+estado.textContent = "⚠️ " + e.message;
 });
 }
 
 // --- FORMULARIO MANUAL ---
 var modalForm = document.getElementById("modalForm");
-document.getElementById("btnAgregar").addEventListener("click", function() { abrirForm(null); });
+document.getElementById("btnAgregar").addEventListener("click", function() {
+if (tipoActivo === "usuarios") abrirFormUsuario();
+else abrirForm(null);
+});
 
-function abrirForm(id) {
+var extrasNuevo = {};
+
+function abrirForm(id, prellenado) {
 editandoId = id;
 var config = configEntidades[tipoActivo];
 var registro = id ? buscarPorId(tipoActivo, id) : null;
-var datos = registro ? registro.data : {};
-document.getElementById("tituloForm").textContent = (id ? "Editar " : "Agregar ") + config.titulo;
+var datos = registro ? registro.data : (prellenado || {});
+extrasNuevo = {};
+if (!id && prellenado) {
+["creado_por", "origen", "ml_sender_id"].forEach(function(k) { if (prellenado[k]) extrasNuevo[k] = prellenado[k]; });
+}
+document.getElementById("tituloForm").textContent = (id ? "Editar " : (prellenado && prellenado.creado_por ? "Check-in de " : "Agregar ")) + config.titulo;
 document.getElementById("btnEliminar").classList.toggle("oculto", !id);
 var contenedorCampos = document.getElementById("camposForm");
 contenedorCampos.innerHTML = "";
+if (tipoActivo === "pedidos") {
+contenedorCampos.insertAdjacentHTML("beforeend",
+"<div id='avisoForm' class='aviso-form oculto'></div>" +
+"<div class='ocr-panel'>" +
+"<label class='btn-ocr'>📷 Leer datos de la etiqueta<input type='file' accept='image/*' capture='environment' id='inputOcr' hidden></label>" +
+"<div class='ocr-estado' id='ocrEstado'>Toma una foto nítida y de frente a la etiqueta: se completan nombre, dirección y teléfono.</div>" +
+"<details id='ocrDetalle' class='oculto'><summary>Ver texto leído</summary><pre id='ocrTexto'></pre></details>" +
+"</div>");
+document.getElementById("inputOcr").addEventListener("change", function(e) {
+var archivo = e.target.files && e.target.files[0];
+if (archivo) leerEtiqueta(archivo);
+e.target.value = "";
+});
+}
 config.campos.forEach(function(campo) {
 var envoltorio = document.createElement("div");
 envoltorio.className = "campo-form";
@@ -404,9 +856,29 @@ elemento.id = "campo_" + campo.clave;
 elemento.dataset.clave = campo.clave;
 elemento.dataset.tipoCampo = campo.tipo;
 envoltorio.appendChild(elemento);
+// Cliente nuevo directo desde el pedido (por ejemplo, detectado en la etiqueta).
+if (campo.tipo === "select-clientes") {
+elemento.insertAdjacentHTML("beforeend", "<option value='__nuevo__'>➕ Cliente nuevo...</option>");
+envoltorio.insertAdjacentHTML("beforeend",
+"<div class='cliente-nuevo oculto' id='bloqueClienteNuevo'>" +
+"<input type='text' id='nuevoClienteNombre' placeholder='Nombre del cliente nuevo'>" +
+"<input type='tel' id='nuevoClienteTelefono' placeholder='Teléfono (ej: 56912345678)'>" +
+"</div>");
+elemento.addEventListener("change", function() {
+var nuevo = elemento.value === "__nuevo__";
+document.getElementById("bloqueClienteNuevo").classList.toggle("oculto", !nuevo);
+// Al elegir un cliente existente sin dirección escrita, se usa su dirección habitual.
+var c = buscarPorId("clientes", elemento.value);
+var dir = document.getElementById("campo_direccion_entrega");
+if (c && c.data.direccion && dir && !dir.value) { dir.value = c.data.direccion; marcarAutollenado(dir); }
+});
+}
 contenedorCampos.appendChild(envoltorio);
 });
 modalForm.classList.remove("oculto");
+if (tipoActivo === "pedidos" && datos.cliente_detectado) {
+elegirClienteDetectado(datos.cliente_detectado.nombre, datos.cliente_detectado.telefono);
+}
 }
 
 function cerrarForm() {
@@ -416,7 +888,10 @@ editandoId = null;
 document.getElementById("cerrarForm").addEventListener("click", cerrarForm);
 document.getElementById("btnCancelarForm").addEventListener("click", cerrarForm);
 
+var guardando = false;
+
 document.getElementById("btnGuardar").addEventListener("click", function() {
+if (guardando) return;
 var config = configEntidades[tipoActivo];
 var datosGuardar = {};
 var faltaObligatorio = false;
@@ -424,10 +899,32 @@ config.campos.forEach(function(campo) {
 var elemento = document.getElementById("campo_" + campo.clave);
 var valor = elemento.value.trim();
 if (campo.requerido && !valor) faltaObligatorio = true;
-datosGuardar[campo.clave] = valor;
+// Tarifas y pagos se guardan como número (sin puntos ni signo $).
+datosGuardar[campo.clave] = campo.tipo === "number" ? (Number(valor.replace(/[^\d]/g, "")) || 0) : valor;
 });
 if (faltaObligatorio) {
 alert("Completa los campos obligatorios antes de guardar.");
+return;
+}
+if (tipoActivo === "pedidos" && datosGuardar.cliente_id === "__nuevo__") {
+var nombreNuevo = document.getElementById("nuevoClienteNombre").value.trim();
+var telNuevo = Etiquetas.normalizarTelefono(document.getElementById("nuevoClienteTelefono").value);
+if (!nombreNuevo) { alert("Escribe el nombre del cliente nuevo."); return; }
+if (buscarPedidoPorCodigo(datosGuardar.codigo_barra, editandoId)) {
+alert("⚠️ Ya existe otro pedido con el código " + datosGuardar.codigo_barra + ".");
+return;
+}
+// Primero se crea el cliente y luego se guarda el pedido con su ID.
+guardando = true;
+db.collection("Clientes").add({ nombre: nombreNuevo, telefono: telNuevo, direccion: datosGuardar.direccion_entrega || "", notas: "" })
+.then(function(ref) {
+guardando = false;
+var sel = document.getElementById("campo_cliente_id");
+if (!buscarPorId("clientes", ref.id)) cache.clientes.push({ id: ref.id, data: { nombre: nombreNuevo, telefono: telNuevo } });
+sel.insertAdjacentHTML("beforeend", "<option value='" + esc(ref.id) + "'>" + esc(nombreNuevo) + "</option>");
+sel.value = ref.id;
+document.getElementById("btnGuardar").click();
+}).catch(function(err) { guardando = false; alert("No se pudo crear el cliente: " + err.message); });
 return;
 }
 if (tipoActivo === "pedidos") {
@@ -439,13 +936,56 @@ datosGuardar.cliente_telefono = cliente ? cliente.data.telefono : "";
 datosGuardar.vendedor_nombre = vendedor ? vendedor.data.nombre : "";
 datosGuardar.vendedor_telefono = vendedor ? vendedor.data.telefono : "";
 datosGuardar.repartidor_nombre = repartidor ? repartidor.data.nombre : "";
-if (!datosGuardar.repartidor_id) delete datosGuardar.repartidor_id;
+if (buscarPedidoPorCodigo(datosGuardar.codigo_barra, editandoId)) {
+alert("⚠️ Ya existe otro pedido con el código " + datosGuardar.codigo_barra + ".");
+return;
 }
+if (!datosGuardar.repartidor_id) {
+// Al quitar el repartidor hay que borrar el campo en Firestore, no solo omitirlo.
+if (editandoId) datosGuardar.repartidor_id = firebase.firestore.FieldValue.delete();
+else delete datosGuardar.repartidor_id;
+}
+if (datosGuardar.estado === "entregado") {
+var previo = editandoId ? buscarPorId("pedidos", editandoId) : null;
+if (!previo || previo.data.estado !== "entregado") {
+datosGuardar.fecha_entrega = firebase.firestore.FieldValue.serverTimestamp();
+}
+}
+if (!editandoId) {
+datosGuardar.estado = datosGuardar.estado || "pendiente";
+datosGuardar.fecha_recepcion = firebase.firestore.FieldValue.serverTimestamp();
+datosGuardar.creado_por = extrasNuevo.creado_por || "Administrador";
+datosGuardar.checkin_por = (auth.currentUser && auth.currentUser.email) || "";
+if (extrasNuevo.origen) datosGuardar.origen = extrasNuevo.origen;
+if (extrasNuevo.ml_sender_id) datosGuardar.ml_sender_id = extrasNuevo.ml_sender_id;
+}
+// La próxima etiqueta de este vendedor de Mercado Libre se reconocerá sola.
+var vendedorRecordar = (!editandoId && extrasNuevo.ml_sender_id && vendedor && !vendedor.data.ml_sender_id) ? vendedor.id : null;
+var pedidoPrevio = editandoId ? buscarPorId("pedidos", editandoId) : null;
+// Si cambió la dirección, se borra la ubicación guardada para volver a buscarla en el mapa.
+var direccionCambio = pedidoPrevio && pedidoPrevio.data.direccion_entrega !== datosGuardar.direccion_entrega;
+if (direccionCambio) datosGuardar.destino = firebase.firestore.FieldValue.delete();
+}
+var tipoGuardado = tipoActivo;
+var idGuardado = editandoId;
 var coleccion = db.collection(configEntidades[tipoActivo].coleccion);
 var promesa = editandoId
 ? coleccion.doc(editandoId).update(datosGuardar)
-: coleccion.add(Object.assign(datosGuardar, tipoActivo === "pedidos" ? { estado: datosGuardar.estado || "pendiente" } : {}));
-promesa.then(function() {
+: coleccion.add(datosGuardar);
+promesa.then(function(ref) {
+if (tipoGuardado === "pedidos") {
+// Ficha pública que ve el cliente en seguimiento.html
+var final = Object.assign({}, pedidoPrevio ? pedidoPrevio.data : {}, datosGuardar);
+final.repartidor_id = typeof datosGuardar.repartidor_id === "string" ? datosGuardar.repartidor_id : null;
+if (direccionCambio) final.destino = null;
+Seguimiento.sincronizar(db, idGuardado || ref.id, final, {
+estadoAnterior: pedidoPrevio ? (pedidoPrevio.data.estado || "pendiente") : undefined,
+codigoAnterior: pedidoPrevio ? pedidoPrevio.data.codigo_barra : undefined
+}).catch(function(e) { console.warn("No se pudo actualizar el seguimiento:", e); });
+if (vendedorRecordar) {
+db.collection("Vendedores").doc(vendedorRecordar).update({ ml_sender_id: final.ml_sender_id }).catch(function(e) { console.warn(e); });
+}
+}
 cerrarForm();
 }).catch(function(err) {
 alert("No se pudo guardar: " + err.message);
@@ -455,12 +995,700 @@ alert("No se pudo guardar: " + err.message);
 document.getElementById("btnEliminar").addEventListener("click", function() {
 if (!editandoId) return;
 if (!confirm("¿Eliminar este registro? Esta acción no se puede deshacer.")) return;
+var pedidoBorrado = tipoActivo === "pedidos" ? buscarPorId("pedidos", editandoId) : null;
 db.collection(configEntidades[tipoActivo].coleccion).doc(editandoId).delete().then(function() {
+// El enlace de seguimiento del cliente deja de funcionar junto con el pedido.
+if (pedidoBorrado) Seguimiento.eliminar(db, pedidoBorrado.data).catch(function(e) { console.warn(e); });
 cerrarForm();
 }).catch(function(err) {
 alert("No se pudo eliminar: " + err.message);
 });
 });
+</script>
+
+<script>
+// =====================================================================
+//  INDICADORES Y FILTROS DE PEDIDOS
+// =====================================================================
+var filtro = { estado: "", repartidor: "", texto: "", especial: "" };
+
+function inicioDeHoy() { var d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+
+function hayFiltros() { return !!(filtro.estado || filtro.repartidor || filtro.texto.trim() || filtro.especial); }
+
+function cumpleEspecial(p, especial, hoy) {
+var est = p.estado || "pendiente";
+if (especial === "recibidos_hoy") return p.fecha_recepcion !== undefined && (ms(p.fecha_recepcion) || Date.now()) >= hoy;
+if (especial === "entregados_hoy") return est === "entregado" && (ms(p.fecha_entrega) || Date.now()) >= hoy;
+return true;
+}
+
+function filtrarPedidos() {
+var hoy = inicioDeHoy();
+var palabras = Etiquetas.sinAcentos(filtro.texto).split(/\s+/).filter(Boolean);
+return cache.pedidos.filter(function(it) {
+var p = it.data, est = p.estado || "pendiente";
+if (filtro.estado && est !== filtro.estado) return false;
+if (filtro.repartidor === "__sin__" && p.repartidor_id) return false;
+if (filtro.repartidor && filtro.repartidor !== "__sin__" && p.repartidor_id !== filtro.repartidor) return false;
+if (filtro.especial && !cumpleEspecial(p, filtro.especial, hoy)) return false;
+if (palabras.length) {
+var texto = Etiquetas.sinAcentos([it.id, p.codigo_barra, p.cliente_nombre, p.cliente_telefono, p.direccion_entrega, p.repartidor_nombre, p.vendedor_nombre].join(" "));
+if (!palabras.every(function(w) { return texto.indexOf(w) > -1; })) return false;
+}
+return true;
+});
+}
+
+var KPIS = [
+{ clave: "recibidos", lbl: "Recibidos hoy", css: "", aplica: { especial: "recibidos_hoy" } },
+{ clave: "sin", lbl: "Sin asignar", css: "k-pend", aplica: { estado: "pendiente", repartidor: "__sin__" } },
+{ clave: "camino", lbl: "En camino", css: "k-camino", aplica: { estado: "en_camino" } },
+{ clave: "ok", lbl: "Entregados hoy", css: "k-ok", aplica: { especial: "entregados_hoy" } },
+{ clave: "fail", lbl: "Por resolver", css: "k-fail", aplica: { estado: "no_entregado" } }
+];
+
+function pintarKpis() {
+var hoy = inicioDeHoy();
+var n = { recibidos: 0, sin: 0, camino: 0, ok: 0, fail: 0 };
+cache.pedidos.forEach(function(it) {
+var p = it.data, est = p.estado || "pendiente";
+if (cumpleEspecial(p, "recibidos_hoy", hoy)) n.recibidos++;
+if (est === "pendiente" && !p.repartidor_id) n.sin++;
+if (est === "en_camino") n.camino++;
+if (cumpleEspecial(p, "entregados_hoy", hoy)) n.ok++;
+if (est === "no_entregado") n.fail++;
+});
+var cont = document.getElementById("kpis");
+cont.innerHTML = "";
+KPIS.forEach(function(k) {
+var activo = Object.keys(k.aplica).every(function(c) { return filtro[c] === k.aplica[c]; }) &&
+["estado", "repartidor", "especial"].every(function(c) { return k.aplica[c] !== undefined || !filtro[c]; });
+var b = document.createElement("button");
+b.className = "kpi " + k.css + (activo ? " activo" : "");
+b.innerHTML = "<div class='num'>" + n[k.clave] + "</div><div class='lbl'>" + k.lbl + "</div>";
+b.addEventListener("click", function() {
+filtro.estado = ""; filtro.repartidor = ""; filtro.especial = "";
+if (!activo) Object.assign(filtro, k.aplica);
+sincronizarControlesFiltro();
+renderLista();
+});
+cont.appendChild(b);
+});
+}
+
+function pintarResumenFiltro(cantidad) {
+var r = document.getElementById("resumenFiltro");
+r.innerHTML = "<span>Mostrando " + cantidad + " de " + cache.pedidos.length + " pedidos</span>" +
+(hayFiltros() ? "<a id='limpiarFiltros'>✕ Limpiar filtros</a>" : "");
+var l = document.getElementById("limpiarFiltros");
+if (l) l.addEventListener("click", function() {
+filtro = { estado: "", repartidor: "", texto: "", especial: "" };
+sincronizarControlesFiltro();
+renderLista();
+});
+}
+
+function pintarOpcionesRepartidor() {
+var sel = document.getElementById("filtroRepartidor");
+sel.innerHTML = "<option value=''>Todos los repartidores</option><option value='__sin__'>Sin asignar</option>" +
+cache.repartidores.map(function(r) { return "<option value='" + esc(r.id) + "'>" + esc(r.data.nombre || r.id) + "</option>"; }).join("");
+sel.value = filtro.repartidor;
+var carga = document.getElementById("cargaRepartidor");
+var elegido = carga.value;
+carga.innerHTML = "<option value=''>Elige un repartidor...</option>" +
+cache.repartidores.map(function(r) { return "<option value='" + esc(r.id) + "'>" + esc(r.data.nombre || r.id) + "</option>"; }).join("");
+carga.value = elegido;
+}
+
+function sincronizarControlesFiltro() {
+document.getElementById("filtroEstado").value = filtro.estado;
+document.getElementById("filtroRepartidor").value = filtro.repartidor;
+document.getElementById("buscarPedido").value = filtro.texto;
+}
+
+document.getElementById("filtroEstado").innerHTML = "<option value=''>Todos los estados</option>" +
+Object.keys(nombresEstado).map(function(k) { return "<option value='" + k + "'>" + nombresEstado[k] + "</option>"; }).join("");
+pintarOpcionesRepartidor();
+
+document.getElementById("filtroEstado").addEventListener("change", function(e) { filtro.estado = e.target.value; filtro.especial = ""; renderLista(); });
+document.getElementById("filtroRepartidor").addEventListener("change", function(e) { filtro.repartidor = e.target.value; renderLista(); });
+document.getElementById("filtroRango").addEventListener("change", function() { suscribirPedidos(); });
+var temporizadorBusqueda = null;
+document.getElementById("buscarPedido").addEventListener("input", function(e) {
+clearTimeout(temporizadorBusqueda);
+temporizadorBusqueda = setTimeout(function() { filtro.texto = e.target.value; renderLista(); }, 200);
+});
+
+// =====================================================================
+//  USUARIOS (cuentas de acceso)
+// =====================================================================
+var ROLES = {
+admin: { nombre: "Admin", icono: "🛡️", campo: null },
+repartidor: { nombre: "Repartidor", icono: "🚚", campo: "repartidorId", tipo: "repartidores", coleccion: "repartidores", etiqueta: "Repartidor vinculado" },
+vendedor: { nombre: "Tienda", icono: "🏪", campo: "vendedorId", tipo: "vendedores", coleccion: "Vendedores", etiqueta: "Tienda (vendedor) vinculada" },
+cliente: { nombre: "Cliente", icono: "🙋", campo: "clienteId", tipo: "clientes", coleccion: "Clientes", etiqueta: "Cliente vinculado" }
+};
+
+function renderUsuarios(contenedor) {
+contenedor.innerHTML = "<div class='aviso-usuarios'>👤 Crea cuentas para <b>repartidores</b>, <b>tiendas</b> y <b>clientes</b> con el botón +. " +
+"Les llega un correo para crear su contraseña, y cada uno ve solo lo suyo.</div>";
+var lista = cache.usuarios.slice().sort(function(a, b) {
+return (a.data.activo === false) - (b.data.activo === false) || String(a.data.rol).localeCompare(String(b.data.rol)) || String(a.data.nombre || "").localeCompare(String(b.data.nombre || ""));
+});
+if (!lista.length) { contenedor.insertAdjacentHTML("beforeend", "<div class='vacio'>Aún no hay cuentas.</div>"); return; }
+lista.forEach(function(u) {
+var d = u.data, rol = ROLES[d.rol] || { nombre: d.rol || "?", icono: "❔" };
+var ficha = rol.campo ? buscarPorId(rol.tipo, d[rol.campo]) : null;
+var activo = d.activo !== false, propio = u.id === uidActual;
+var div = document.createElement("div");
+div.className = "registro" + (activo ? "" : " inactivo");
+div.innerHTML =
+"<div class='fila-top'><div>" +
+"<div class='nombre'>" + esc(d.nombre || "(sin nombre)") + (propio ? " · tú" : "") + "</div>" +
+"<div class='detalle'>" + esc(d.email || "Correo no registrado en la ficha") + "</div>" +
+(rol.campo ? "<div class='detalle'>Ficha: " + esc(ficha ? ficha.data.nombre : "⚠️ sin vincular") + "</div>" : "") +
+(activo ? "" : "<div class='detalle' style='color:#f87171'>Cuenta desactivada</div>") +
+"</div><span class='rol-badge'>" + rol.icono + " " + esc(rol.nombre) + "</span></div>" +
+"<div class='fila-botones'>" +
+(d.email ? "<button class='btn-editar' data-accion='invitar'>✉️ Reenviar invitación</button>" : "") +
+(propio ? "" : "<button class='btn-editar' data-accion='activo'>" + (activo ? "⏸ Desactivar" : "▶️ Activar") + "</button>") +
+"</div>";
+div.querySelectorAll("[data-accion]").forEach(function(b) {
+b.addEventListener("click", function() {
+if (b.getAttribute("data-accion") === "invitar") {
+b.disabled = true;
+enviarInvitacion(d.email, d.rol).then(function() { b.textContent = "✅ Invitación enviada"; })
+.catch(function(e) { b.disabled = false; alert("No se pudo enviar: " + e.message); });
+} else {
+var nuevo = !activo;
+if (!nuevo && !confirm("¿Desactivar la cuenta de " + (d.nombre || d.email) + "? No podrá entrar hasta que la reactives.")) return;
+db.collection("usuarios").doc(u.id).update({ activo: nuevo }).catch(function(e) { alert("No se pudo actualizar: " + e.message); });
+}
+});
+});
+contenedor.appendChild(div);
+});
+}
+
+// El correo de "crear contraseña" es el de restablecer contraseña de Firebase.
+// Al terminar, lleva a la pestaña correcta del login (si el dominio está autorizado en Firebase).
+function enviarInvitacion(email, rol) {
+auth.languageCode = "es";
+var pestana = rol === "vendedor" || rol === "cliente" ? "cliente" : rol;
+var ajustes = { url: new URL("login.html?rol=" + pestana, location.href).href };
+return auth.sendPasswordResetEmail(email, ajustes).catch(function(e) {
+if (/continue-uri|unauthorized/i.test(e.code || "")) return auth.sendPasswordResetEmail(email);
+throw e;
+});
+}
+
+function pintarVinculos() {
+var rol = ROLES[document.getElementById("usuRol").value];
+var sel = document.getElementById("usuVinculo");
+var usados = {};
+cache.usuarios.forEach(function(u) { if (u.data.rol === document.getElementById("usuRol").value && u.data[rol.campo]) usados[u.data[rol.campo]] = true; });
+document.getElementById("usuVinculoLabel").textContent = rol.etiqueta;
+sel.innerHTML = "<option value='__nuevo__'>➕ Crear ficha nueva con este nombre</option>" +
+cache[rol.tipo].slice().sort(function(a, b) { return String(a.data.nombre || "").localeCompare(String(b.data.nombre || "")); })
+.map(function(it) {
+return "<option value='" + esc(it.id) + "'" + (usados[it.id] ? " disabled" : "") + ">" + esc(it.data.nombre || it.id) + (usados[it.id] ? " (ya tiene cuenta)" : "") + "</option>";
+}).join("");
+document.getElementById("usuVinculoAyuda").textContent = {
+repartidor: "Con esto el repartidor ve los pedidos que le asignes.",
+vendedor: "La tienda verá solo los paquetes donde figura como vendedor.",
+cliente: "El cliente verá solo los pedidos a su nombre."
+}[document.getElementById("usuRol").value];
+vinculoCambiado();
+}
+
+function vinculoCambiado() {
+var nuevo = document.getElementById("usuVinculo").value === "__nuevo__";
+document.getElementById("usuTelefonoCampo").classList.toggle("oculto", !nuevo);
+// Si se elige una ficha existente, se usa su nombre.
+var rol = ROLES[document.getElementById("usuRol").value];
+var ficha = buscarPorId(rol.tipo, document.getElementById("usuVinculo").value);
+if (ficha && !document.getElementById("usuNombre").value) document.getElementById("usuNombre").value = ficha.data.nombre || "";
+}
+
+function abrirFormUsuario() {
+["usuNombre", "usuEmail", "usuTelefono"].forEach(function(id) { document.getElementById(id).value = ""; });
+document.getElementById("usuRol").value = "repartidor";
+document.getElementById("usuError").classList.add("oculto");
+pintarVinculos();
+document.getElementById("modalUsuario").classList.remove("oculto");
+}
+
+function cerrarFormUsuario() { document.getElementById("modalUsuario").classList.add("oculto"); }
+document.getElementById("cerrarUsuario").addEventListener("click", cerrarFormUsuario);
+document.getElementById("btnCancelarUsuario").addEventListener("click", cerrarFormUsuario);
+document.getElementById("usuRol").addEventListener("change", pintarVinculos);
+document.getElementById("usuVinculo").addEventListener("change", vinculoCambiado);
+
+// Se usa una segunda instancia de Firebase para crear la cuenta: así el admin no pierde su sesión.
+var appCreadora = null;
+function authCreadora() {
+if (!appCreadora) {
+appCreadora = firebase.initializeApp(firebaseConfig, "crearCuentas");
+appCreadora.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+}
+return appCreadora.auth();
+}
+
+function claveAleatoria() {
+var a = new Uint32Array(6);
+crypto.getRandomValues(a);
+return Array.prototype.map.call(a, function(n) { return n.toString(36); }).join("") + "Aa1!";
+}
+
+function errorUsuario(t) {
+var el = document.getElementById("usuError");
+el.textContent = t;
+el.classList.remove("oculto");
+}
+
+document.getElementById("btnCrearUsuario").addEventListener("click", function() {
+var btn = this;
+var rolClave = document.getElementById("usuRol").value, rol = ROLES[rolClave];
+var nombre = document.getElementById("usuNombre").value.trim();
+var email = document.getElementById("usuEmail").value.trim().toLowerCase();
+var vinculo = document.getElementById("usuVinculo").value;
+var telefono = Etiquetas.normalizarTelefono(document.getElementById("usuTelefono").value);
+document.getElementById("usuError").classList.add("oculto");
+if (!nombre) return errorUsuario("Escribe el nombre.");
+if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return errorUsuario("Escribe un correo válido.");
+if (cache.usuarios.some(function(u) { return (u.data.email || "").toLowerCase() === email; })) return errorUsuario("Ya existe una cuenta con ese correo.");
+
+btn.disabled = true;
+btn.textContent = "Creando cuenta...";
+var fichaId = vinculo;
+var paso = vinculo === "__nuevo__"
+? db.collection(rol.coleccion).add(rolClave === "cliente" ? { nombre: nombre, telefono: telefono, direccion: "", notas: "" } : { nombre: nombre, telefono: telefono })
+.then(function(ref) { fichaId = ref.id; })
+: Promise.resolve();
+
+var uid = null;
+paso.then(function() {
+return authCreadora().createUserWithEmailAndPassword(email, claveAleatoria());
+}).then(function(cred) {
+uid = cred.user.uid;
+return authCreadora().signOut();
+}).then(function() {
+var perfil = { rol: rolClave, nombre: nombre, email: email, activo: true, creado: firebase.firestore.FieldValue.serverTimestamp() };
+perfil[rol.campo] = fichaId;
+return db.collection("usuarios").doc(uid).set(perfil);
+}).then(function() {
+return enviarInvitacion(email, rolClave);
+}).then(function() {
+cerrarFormUsuario();
+alert("✅ Cuenta creada. Se envió un correo a " + email + " para que cree su contraseña.\n\nSi no le llega, que revise la carpeta de spam o usa «Reenviar invitación».");
+}).catch(function(e) {
+var m = e.message;
+if (e.code === "auth/email-already-in-use") m = "Ese correo ya tiene una cuenta en Firebase. Si es de esta persona, pídele que use «¿Olvidaste tu contraseña?» en el login.";
+else if (e.code === "auth/invalid-email") m = "El correo no es válido.";
+else if (e.code === "auth/operation-not-allowed") m = "El acceso con correo y contraseña está desactivado en Firebase (Authentication > Sign-in method).";
+else if (uid) m = "La cuenta se creó, pero hubo un problema después: " + e.message;
+errorUsuario(m);
+}).then(function() {
+btn.disabled = false;
+btn.textContent = "Crear cuenta y enviar invitación";
+});
+});
+
+// =====================================================================
+//  MODO CARGA: asignar paquetes a un repartidor escaneándolos seguidos
+// =====================================================================
+var lectorCarga = null, ultimoLeido = "", ultimoLeidoMs = 0, cargados = 0;
+
+document.getElementById("btnModoCarga").addEventListener("click", function() {
+cargados = 0;
+document.getElementById("cargaLista").innerHTML = "";
+document.getElementById("cargaResumen").textContent = "Elige un repartidor y escanea sus paquetes uno tras otro.";
+document.getElementById("modalCarga").classList.remove("oculto");
+});
+
+function cerrarCarga() {
+detenerCamaraCarga().then(function() { document.getElementById("modalCarga").classList.add("oculto"); });
+}
+document.getElementById("cerrarCarga").addEventListener("click", cerrarCarga);
+
+function detenerCamaraCarga() {
+var btn = document.getElementById("btnCamaraCarga");
+btn.textContent = "📷 Empezar a escanear";
+if (lectorCarga && lectorCarga.isScanning) return lectorCarga.stop().catch(function() {});
+return Promise.resolve();
+}
+
+document.getElementById("btnCamaraCarga").addEventListener("click", function() {
+if (lectorCarga && lectorCarga.isScanning) { detenerCamaraCarga(); return; }
+if (!document.getElementById("cargaRepartidor").value) { alert("Primero elige el repartidor."); return; }
+if (!lectorCarga) lectorCarga = new Html5Qrcode("reader-carga", Etiquetas.configLector());
+lectorCarga.start({ facingMode: "environment" }, Etiquetas.opcionesEscaner(), function(texto) {
+// La cámara lee el mismo código varias veces seguidas: se ignora durante 3 s.
+var ahora = Date.now();
+if (texto === ultimoLeido && ahora - ultimoLeidoMs < 3000) return;
+ultimoLeido = texto; ultimoLeidoMs = ahora;
+cargarPaquete(texto);
+}, function() {}).then(function() {
+document.getElementById("btnCamaraCarga").textContent = "⏹ Detener cámara";
+}).catch(function(e) { alert("No se pudo iniciar la cámara: " + e); });
+});
+
+document.getElementById("formCodigoCarga").addEventListener("submit", function(e) {
+e.preventDefault();
+var campo = document.getElementById("codigoCarga");
+var texto = campo.value.trim();
+campo.value = "";
+if (!texto) return;
+if (!document.getElementById("cargaRepartidor").value) { alert("Primero elige el repartidor."); return; }
+cargarPaquete(texto);
+});
+
+var audioCtx = null;
+function sonido(ok) {
+try {
+audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+o.frequency.value = ok ? 880 : 220;
+g.gain.value = 0.15;
+o.connect(g); g.connect(audioCtx.destination);
+o.start(); o.stop(audioCtx.currentTime + (ok ? 0.12 : 0.35));
+} catch (e) { /* sin audio */ }
+if (navigator.vibrate) navigator.vibrate(ok ? 60 : [80, 60, 80]);
+}
+
+function lineaCarga(clase, icono, titulo, detalle) {
+var li = document.createElement("li");
+li.className = clase;
+li.innerHTML = "<span>" + icono + "</span><div><b>" + esc(titulo) + "</b><small>" + esc(detalle) + "</small></div>";
+var lista = document.getElementById("cargaLista");
+lista.insertBefore(li, lista.firstChild);
+}
+
+function cargarPaquete(texto) {
+var codigo = Etiquetas.parsearCodigo(texto).codigo;
+var repId = document.getElementById("cargaRepartidor").value;
+var rep = buscarPorId("repartidores", repId);
+buscarPedidoServidor(codigo).then(function(item) {
+if (!item) { sonido(false); lineaCarga("err", "✖", codigo, "No está registrado: haz primero el check-in."); return; }
+var p = item.data, est = p.estado || "pendiente";
+if (est === "entregado") { sonido(false); lineaCarga("warn", "⚠️", codigo, "Ya fue entregado."); return; }
+if (p.repartidor_id === repId) { sonido(true); lineaCarga("warn", "ℹ️", codigo, "Ya estaba asignado a " + rep.data.nombre + "."); return; }
+var antes = p.repartidor_nombre;
+var cambios = { repartidor_id: repId, repartidor_nombre: rep.data.nombre || "" };
+return db.collection("Pedidos").doc(item.id).update(cambios).then(function() {
+var final = Object.assign({}, p, cambios);
+Seguimiento.sincronizar(db, item.id, final, { estadoAnterior: est }).catch(function(e) { console.warn(e); });
+cargados++;
+sonido(true);
+lineaCarga("ok", "✅", codigo, (p.cliente_nombre || "") + (antes ? " · reasignado (antes: " + antes + ")" : ""));
+document.getElementById("cargaResumen").textContent = cargados + (cargados === 1 ? " paquete cargado" : " paquetes cargados") + " a " + rep.data.nombre + ".";
+});
+}).catch(function(e) {
+sonido(false);
+lineaCarga("err", "✖", codigo, "Error: " + e.message);
+});
+}
+
+function formatoPesos(n) { return "$" + Math.round(Number(n) || 0).toLocaleString("es-CL"); }
+
+// =====================================================================
+//  REINTENTOS Y DEVOLUCIONES
+// =====================================================================
+var reprogramarId = null;
+
+function fechaInput(d) {
+var z = function(n) { return (n < 10 ? "0" : "") + n; };
+return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
+}
+
+function marcarChip(contenedorId, boton) {
+document.querySelectorAll("#" + contenedorId + " button").forEach(function(b) { b.classList.toggle("activo", b === boton); });
+}
+
+function abrirReprogramar(id) {
+var it = buscarPorId("pedidos", id);
+if (!it) return;
+var p = it.data;
+reprogramarId = id;
+var ultimo = p.no_entrega ? p.no_entrega.motivo + (p.no_entrega.nota ? " (" + p.no_entrega.nota + ")" : "") : "sin motivo";
+document.getElementById("reprogramarInfo").textContent = "📦 " + (p.codigo_barra || id) + " · " + (p.cliente_nombre || "") + " · Último intento: " + ultimo + ".";
+var manana = new Date(); manana.setDate(manana.getDate() + 1);
+document.getElementById("reprogramarFecha").value = fechaInput(manana);
+document.getElementById("reprogramarFecha").min = fechaInput(new Date());
+marcarChip("chipsFecha", document.querySelector("#chipsFecha [data-dias='1']"));
+document.getElementById("reprogramarRepartidor").innerHTML = "<option value=''>Sin asignar (lo asigno después)</option>" +
+cache.repartidores.map(function(r) { return "<option value='" + esc(r.id) + "'>" + esc(r.data.nombre || r.id) + "</option>"; }).join("");
+document.getElementById("reprogramarRepartidor").value = p.repartidor_id || "";
+document.getElementById("reprogramarNota").value = "";
+document.getElementById("modalReprogramar").classList.remove("oculto");
+}
+
+document.querySelectorAll("#chipsFecha button").forEach(function(b) {
+b.addEventListener("click", function() {
+var d = new Date(); d.setDate(d.getDate() + Number(b.getAttribute("data-dias")));
+document.getElementById("reprogramarFecha").value = fechaInput(d);
+marcarChip("chipsFecha", b);
+});
+});
+document.getElementById("reprogramarFecha").addEventListener("input", function() { marcarChip("chipsFecha", null); });
+function cerrarReprogramar() { document.getElementById("modalReprogramar").classList.add("oculto"); reprogramarId = null; }
+document.getElementById("cerrarReprogramar").addEventListener("click", cerrarReprogramar);
+document.getElementById("btnCancelarReprogramar").addEventListener("click", cerrarReprogramar);
+
+document.getElementById("btnGuardarReprogramar").addEventListener("click", function() {
+var it = buscarPorId("pedidos", reprogramarId);
+if (!it) return;
+var valor = document.getElementById("reprogramarFecha").value;
+if (!valor) { alert("Elige la fecha de la nueva entrega."); return; }
+var partes = valor.split("-");
+var fecha = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]), 9, 0, 0);
+var repId = document.getElementById("reprogramarRepartidor").value;
+var rep = buscarPorId("repartidores", repId);
+var nota = document.getElementById("reprogramarNota").value.trim();
+var FV = firebase.firestore.FieldValue;
+var cambios = {
+estado: "pendiente",
+fecha_programada: firebase.firestore.Timestamp.fromDate(fecha),
+repartidor_id: repId || FV.delete(),
+repartidor_nombre: rep ? rep.data.nombre || "" : "",
+no_entrega: FV.delete()
+};
+if (nota) cambios.referencia = (it.data.referencia ? it.data.referencia + " · " : "") + "Reprogramado: " + nota;
+var id = reprogramarId, btn = this;
+btn.disabled = true;
+db.collection("Pedidos").doc(id).update(cambios).then(function() {
+var final = Object.assign({}, it.data, cambios, { repartidor_id: repId || null, no_entrega: null, fecha_programada: cambios.fecha_programada });
+Seguimiento.sincronizar(db, id, final, { estadoAnterior: it.data.estado }).catch(function(e) { console.warn(e); });
+cerrarReprogramar();
+}).catch(function(e) { alert("No se pudo reprogramar: " + e.message); }).then(function() { btn.disabled = false; });
+});
+
+function devolverPedido(id) {
+var it = buscarPorId("pedidos", id);
+if (!it) return;
+var p = it.data;
+var nota = prompt("↩️ Devolver " + (p.codigo_barra || id) + " a la tienda " + (p.vendedor_nombre || "") + ".\n\nNota (opcional): por ejemplo, \"3 intentos, cliente no contesta\".", p.no_entrega ? p.no_entrega.motivo : "");
+if (nota === null) return;
+var cambios = {
+estado: "devuelto",
+devolucion: { fecha: firebase.firestore.Timestamp.now(), nota: nota.trim(), intentos: p.intentos || 0 },
+fecha_programada: firebase.firestore.FieldValue.delete()
+};
+db.collection("Pedidos").doc(id).update(cambios).then(function() {
+var final = Object.assign({}, p, cambios, { fecha_programada: null });
+Seguimiento.sincronizar(db, id, final, { estadoAnterior: p.estado }).catch(function(e) { console.warn(e); });
+}).catch(function(e) { alert("No se pudo marcar como devuelto: " + e.message); });
+}
+
+// =====================================================================
+//  REPORTES EN EXCEL (cobro a tiendas y pago a repartidores)
+// =====================================================================
+var cargandoXlsx = null;
+function cargarXlsx() {
+if (window.XLSX) return Promise.resolve();
+if (!cargandoXlsx) {
+cargandoXlsx = new Promise(function(ok, falla) {
+var s = document.createElement("script");
+s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+s.onload = ok;
+s.onerror = function() { cargandoXlsx = null; falla(new Error("No se pudo cargar el generador de Excel. Revisa tu conexión.")); };
+document.head.appendChild(s);
+});
+}
+return cargandoXlsx;
+}
+
+function elegirPeriodo(periodo) {
+var hoy = new Date(), desde, hasta;
+if (periodo === "semana") {
+desde = new Date(hoy); desde.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+hasta = hoy;
+} else if (periodo === "mes_anterior") {
+desde = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+} else {
+desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+hasta = hoy;
+}
+document.getElementById("repDesde").value = fechaInput(desde);
+document.getElementById("repHasta").value = fechaInput(hasta);
+marcarChip("chipsPeriodo", document.querySelector("#chipsPeriodo [data-periodo='" + periodo + "']"));
+}
+
+document.getElementById("btnReportes").addEventListener("click", function() {
+elegirPeriodo("mes");
+var sinTarifa = cache.vendedores.filter(function(v) { return !v.data.tarifa; }).length;
+var sinPago = cache.repartidores.filter(function(r) { return !r.data.pago_entrega; }).length;
+document.getElementById("repTarifas").innerHTML = (sinTarifa || sinPago)
+? "💲 Faltan tarifas: " + (sinTarifa ? sinTarifa + " tienda(s) sin tarifa" : "") + (sinTarifa && sinPago ? " y " : "") + (sinPago ? sinPago + " repartidor(es) sin pago por entrega" : "") +
+". Se cuentan con $0. Puedes definirlas en las pestañas Vendedores y Repartidores (botón Editar)."
+: "💲 Se usan las tarifas actuales de cada tienda y el pago por entrega de cada repartidor.";
+document.getElementById("repEstado").textContent = "";
+document.getElementById("modalReportes").classList.remove("oculto");
+});
+document.querySelectorAll("#chipsPeriodo button").forEach(function(b) {
+b.addEventListener("click", function() { elegirPeriodo(b.getAttribute("data-periodo")); });
+});
+["repDesde", "repHasta"].forEach(function(id) {
+document.getElementById(id).addEventListener("input", function() { marcarChip("chipsPeriodo", null); });
+});
+document.getElementById("cerrarReportes").addEventListener("click", function() { document.getElementById("modalReportes").classList.add("oculto"); });
+
+function aFecha(valor, finDelDia) {
+var p = valor.split("-");
+return finDelDia
+? new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 23, 59, 59, 999)
+: new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 0, 0, 0, 0);
+}
+
+document.getElementById("btnDescargarReporte").addEventListener("click", function() {
+var btn = this, estado = document.getElementById("repEstado");
+var vDesde = document.getElementById("repDesde").value, vHasta = document.getElementById("repHasta").value;
+if (!vDesde || !vHasta) { estado.textContent = "Elige las dos fechas."; return; }
+var desde = aFecha(vDesde, false), hasta = aFecha(vHasta, true);
+if (desde > hasta) { estado.textContent = "La fecha «desde» es posterior a «hasta»."; return; }
+btn.disabled = true;
+estado.textContent = "Reuniendo los pedidos del período...";
+var T = firebase.firestore.Timestamp;
+var rango = function(campo) {
+return db.collection("Pedidos").where(campo, ">=", T.fromDate(desde)).where(campo, "<=", T.fromDate(hasta)).get();
+};
+// Recibidos en el período + entregados en el período (un paquete puede recibirse un mes y entregarse el siguiente).
+Promise.all([rango("fecha_recepcion"), rango("fecha_entrega"), cargarXlsx()]).then(function(r) {
+var mapa = {};
+[r[0], r[1]].forEach(function(s) { s.forEach(function(d) { mapa[d.id] = d.data(); }); });
+var ids = Object.keys(mapa);
+if (!ids.length) { estado.textContent = "No hay pedidos en ese período."; return; }
+generarExcel(ids.map(function(id) { return { id: id, data: mapa[id] }; }), desde, hasta, vDesde, vHasta);
+estado.textContent = "✅ Reporte descargado (" + ids.length + " pedidos).";
+}).catch(function(e) {
+estado.textContent = "⚠️ " + e.message;
+}).then(function() { btn.disabled = false; });
+});
+
+function enRango(ts, desde, hasta) {
+var m = ms(ts);
+return m !== null && m >= desde.getTime() && m <= hasta.getTime();
+}
+
+function generarExcel(lista, desde, hasta, vDesde, vHasta) {
+var porTienda = {}, porRepartidor = {};
+var tot = { recibidos: 0, entregados: 0, devueltos: 0, pendientes: 0, fallidos: 0, cobro: 0, pago: 0 };
+
+function tienda(id, nombre) {
+if (!porTienda[id]) {
+var v = buscarPorId("vendedores", id);
+porTienda[id] = { nombre: (v && v.data.nombre) || nombre || "(sin tienda)", tarifa: v ? Number(v.data.tarifa) || 0 : 0, tarifaDev: v ? Number(v.data.tarifa_devolucion) || 0 : 0, recibidos: 0, entregados: 0, devueltos: 0, pendientes: 0 };
+}
+return porTienda[id];
+}
+function repartidor(id, nombre) {
+if (!porRepartidor[id]) {
+var r = buscarPorId("repartidores", id);
+porRepartidor[id] = { nombre: (r && r.data.nombre) || nombre || "(sin nombre)", pago: r ? Number(r.data.pago_entrega) || 0 : 0, entregados: 0, fallidos: 0 };
+}
+return porRepartidor[id];
+}
+
+var detalle = lista.map(function(it) {
+var p = it.data, est = p.estado || "pendiente";
+var t = tienda(p.vendedor_id || "_", p.vendedor_nombre);
+var recibido = enRango(p.fecha_recepcion, desde, hasta);
+var entregado = est === "entregado" && enRango(p.fecha_entrega, desde, hasta);
+var devuelto = est === "devuelto" && p.devolucion && enRango(p.devolucion.fecha, desde, hasta);
+if (recibido) { t.recibidos++; tot.recibidos++; }
+if (entregado) {
+t.entregados++; tot.entregados++;
+if (p.repartidor_id) repartidor(p.repartidor_id, p.repartidor_nombre).entregados++;
+}
+if (devuelto) { t.devueltos++; tot.devueltos++; }
+if (recibido && ["pendiente", "en_camino", "no_entregado"].indexOf(est) > -1) { t.pendientes++; tot.pendientes++; }
+(p.intentos_detalle || []).forEach(function(intento) {
+if (intento.repartidor_id && enRango(intento.fecha, desde, hasta)) { repartidor(intento.repartidor_id, intento.repartidor_nombre).fallidos++; tot.fallidos++; }
+});
+return {
+"Código": p.codigo_barra || it.id,
+"Recibido": p.fecha_recepcion && p.fecha_recepcion.toDate ? p.fecha_recepcion.toDate() : "",
+"Estado": nombresEstado[est] || est,
+"Entregado": p.fecha_entrega && p.fecha_entrega.toDate ? p.fecha_entrega.toDate() : "",
+"Cliente": p.cliente_nombre || "",
+"Teléfono": p.cliente_telefono || "",
+"Dirección": p.direccion_entrega || "",
+"Tienda": p.vendedor_nombre || t.nombre,
+"Repartidor": p.repartidor_nombre || "",
+"Intentos fallidos": p.intentos || 0,
+"Recibió": p.entrega ? (p.entrega.recibe_nombre || "") + (p.entrega.relacion ? " (" + p.entrega.relacion + ")" : "") : "",
+"Motivo no entrega / devolución": p.no_entrega ? p.no_entrega.motivo : (p.devolucion ? p.devolucion.nota || "Devuelto" : ""),
+"Cobro a tienda": entregado ? t.tarifa : (devuelto ? t.tarifaDev : 0),
+"Pago a repartidor": entregado && p.repartidor_id ? repartidor(p.repartidor_id, p.repartidor_nombre).pago : 0
+};
+});
+
+var filasTienda = Object.keys(porTienda).map(function(k) {
+var t = porTienda[k];
+var total = t.entregados * t.tarifa + t.devueltos * t.tarifaDev;
+tot.cobro += total;
+return { "Tienda": t.nombre, "Recibidos": t.recibidos, "Entregados": t.entregados, "Devueltos": t.devueltos, "En proceso": t.pendientes,
+"Tarifa entrega": t.tarifa, "Tarifa devolución": t.tarifaDev, "Total a cobrar": total };
+}).sort(function(a, b) { return b["Total a cobrar"] - a["Total a cobrar"]; });
+
+var filasRepartidor = Object.keys(porRepartidor).map(function(k) {
+var r = porRepartidor[k];
+var total = r.entregados * r.pago;
+tot.pago += total;
+var intentos = r.entregados + r.fallidos;
+return { "Repartidor": r.nombre, "Entregas": r.entregados, "Intentos fallidos": r.fallidos,
+"% éxito": intentos ? Math.round(r.entregados * 1000 / intentos) / 10 : 0, "Pago por entrega": r.pago, "Total a pagar": total };
+}).sort(function(a, b) { return b["Entregas"] - a["Entregas"]; });
+
+var intentosTot = tot.entregados + tot.fallidos;
+var resumen = [
+["Transporte Leen · Reporte de operación"],
+["Período", vDesde.split("-").reverse().join("-") + " al " + vHasta.split("-").reverse().join("-")],
+["Generado", new Date().toLocaleString("es-CL")],
+[],
+["Paquetes recibidos", tot.recibidos],
+["Paquetes entregados", tot.entregados],
+["Paquetes devueltos", tot.devueltos],
+["Recibidos aún en proceso", tot.pendientes],
+["Intentos fallidos", tot.fallidos],
+["% de éxito en entregas", intentosTot ? Math.round(tot.entregados * 1000 / intentosTot) / 10 + "%" : "-"],
+[],
+["Total a cobrar a tiendas", tot.cobro],
+["Total a pagar a repartidores", tot.pago],
+["Margen (cobro - pago)", tot.cobro - tot.pago],
+[],
+["Nota: se usan las tarifas vigentes al momento de generar el reporte."]
+];
+
+var libro = XLSX.utils.book_new();
+var hResumen = XLSX.utils.aoa_to_sheet(resumen);
+hResumen["!cols"] = [{ wch: 32 }, { wch: 26 }];
+["B12", "B13", "B14"].forEach(function(c) { if (hResumen[c]) hResumen[c].z = "$#,##0"; });
+XLSX.utils.book_append_sheet(libro, hResumen, "Resumen");
+
+function hoja(filas, nombre, columnasPesos, anchos) {
+var h = XLSX.utils.json_to_sheet(filas.length ? filas : [{ "Sin datos": "" }], { cellDates: true });
+var rango = XLSX.utils.decode_range(h["!ref"]);
+var encabezados = filas.length ? Object.keys(filas[0]) : [];
+for (var fila = 1; fila <= rango.e.r; fila++) {
+encabezados.forEach(function(enc, col) {
+var celda = h[XLSX.utils.encode_cell({ r: fila, c: col })];
+if (!celda) return;
+if (columnasPesos.indexOf(enc) > -1) celda.z = "$#,##0";
+if (celda.t === "d") celda.z = "dd-mm-yyyy hh:mm";
+});
+}
+h["!cols"] = anchos.map(function(w) { return { wch: w }; });
+XLSX.utils.book_append_sheet(libro, h, nombre);
+}
+hoja(filasTienda, "Por tienda", ["Tarifa entrega", "Tarifa devolución", "Total a cobrar"], [24, 11, 11, 11, 11, 14, 16, 15]);
+hoja(filasRepartidor, "Por repartidor", ["Pago por entrega", "Total a pagar"], [24, 10, 16, 9, 16, 14]);
+hoja(detalle, "Detalle", ["Cobro a tienda", "Pago a repartidor"], [16, 16, 13, 16, 22, 14, 34, 18, 18, 9, 22, 28, 13, 15]);
+
+XLSX.writeFile(libro, "Reporte Transporte Leen " + vDesde + " a " + vHasta + ".xlsx");
+}
 </script>
 </body>
 </html>

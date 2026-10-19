@@ -9,10 +9,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="seguimiento-comun.js"></script>
+<script src="etiquetas.js"></script>
+<script src="entrega.js"></script>
 <style>
 :root {
   --bg: #0b192c;
@@ -43,6 +48,7 @@ header button { background: var(--surface-alt); border: 1px solid var(--border);
 header button:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
 main { max-width: 560px; margin: 0 auto; padding: 16px; }
 .pedido { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.pedido.activo-ruta { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 4px 16px rgba(59,130,246,0.25); }
 .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; align-items: flex-start; }
 .cod { font-weight: 800; font-size: 15px; color: var(--text); }
 .badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; height: fit-content; }
@@ -52,18 +58,99 @@ main { max-width: 560px; margin: 0 auto; padding: 16px; }
 .no_entregado { background: var(--red-soft); color: var(--red); border: 1px solid var(--red); }
 .devuelto { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple); }
 .det { font-size: 13px; color: var(--text-soft); margin-top: 4px; }
-.enlaces { display: flex; gap: 8px; margin: 14px 0 10px; flex-wrap: wrap; }
-.enlaces a { flex: 1; text-align: center; padding: 10px; border-radius: 10px; background: var(--surface-alt); color: var(--text); font-size: 13px; font-weight: 700; text-decoration: none; border: 1px solid var(--border); transition: background 0.2s; }
-.enlaces a:hover { background: var(--orange); border-color: var(--orange); }
+.acciones { display: flex; gap: 8px; margin-top: 14px; }
+.acciones button { flex: 1; padding: 13px 10px; border-radius: 12px; border: none; font: 800 14px 'Plus Jakarta Sans', sans-serif; color: #fff; cursor: pointer; }
+.btn-camino { background: var(--orange); box-shadow: 0 4px 14px rgba(255,101,0,0.4); }
+.btn-camino:hover { background: var(--orange-hover); }
+.btn-entregado { background: var(--green); box-shadow: 0 4px 14px rgba(16,185,129,0.35); }
+.btn-fallido { background: var(--red-soft) !important; color: #f87171 !important; border: 1px solid var(--red) !important; flex: 0.6 !important; }
+.enlaces { display: flex; gap: 8px; margin: 12px 0 10px; flex-wrap: wrap; }
+.enlaces a, .enlaces button { flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px; background: var(--surface-alt); color: var(--text); font: 700 13px 'Plus Jakarta Sans', sans-serif; text-decoration: none; border: 1px solid var(--border); transition: background 0.2s; cursor: pointer; white-space: nowrap; }
+.enlaces a:hover, .enlaces button:hover { background: var(--orange); border-color: var(--orange); }
+.enlaces .btn-ruta { background: var(--blue-soft); border-color: var(--blue); }
 select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font: 14px 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); outline: none; }
 select:focus { border-color: var(--orange); }
+.select-label { font-size: 11px; color: var(--text-soft); margin-bottom: 4px; font-weight: 700; }
 .msg { text-align: center; color: var(--text-soft); font-size: 14px; padding: 40px 0; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px dashed var(--border); }
+.seccion { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--text-soft); margin: 18px 4px 10px; }
 .fab { position: fixed; right: 18px; bottom: 22px; background: var(--orange); color: #fff; border: none; border-radius: 28px; padding: 15px 22px; font: 700 14px 'Plus Jakarta Sans', sans-serif; box-shadow: 0 4px 16px rgba(255, 101, 0, 0.5); cursor: pointer; z-index: 10; display: flex; align-items: center; gap: 8px; }
 .fab:hover { background: var(--orange-hover); }
 #escaner { display: none; position: fixed; inset: 0; background: rgba(11, 25, 44, 0.95); backdrop-filter: blur(6px); z-index: 50; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
 #escaner p { color: #fff; font-size: 14px; margin-bottom: 12px; text-align: center; }
 #lector { width: 100%; max-width: 420px; background: #000; border-radius: 14px; overflow: hidden; border: 2px solid var(--orange); }
 #escaner button { margin-top: 16px; padding: 12px 28px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-alt); font: 700 14px 'Plus Jakarta Sans', sans-serif; color: var(--text); cursor: pointer; }
+
+/* Aviso de conexión (modo sin señal) */
+.conexion-banner { max-width: 560px; margin: 10px auto 0; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; width: calc(100% - 32px); }
+.conexion-banner.sin { background: rgba(245,158,11,0.15); border: 1px solid #f59e0b; color: #fde68a; }
+.conexion-banner.enviando { background: var(--blue-soft); border: 1px solid var(--blue); color: #bfdbfe; }
+
+/* Aviso de GPS activo */
+#gpsBanner { display: none; position: sticky; top: 65px; z-index: 9; margin: 0 auto; max-width: 560px; padding: 10px 16px 0; }
+#gpsBanner .caja { display: flex; align-items: center; gap: 10px; background: var(--blue-soft); border: 1px solid var(--blue); border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; backdrop-filter: blur(8px); }
+#gpsBanner .caja.error { background: var(--red-soft); border-color: var(--red); }
+.punto { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; box-shadow: 0 0 0 0 rgba(16,185,129,.7); animation: pulso 1.6s infinite; }
+.error .punto { background: var(--red); animation: none; }
+@keyframes pulso { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.7); } 70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+
+/* Hoja inferior "Pedido en camino" */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 60; }
+.overlay.visible { display: flex; }
+.hoja { background: var(--surface); width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 22px 20px 26px; border: 2px solid var(--orange); border-bottom: none; text-align: center; animation: subir .25s ease-out; }
+@media (min-width: 540px) { .overlay { align-items: center; } .hoja { border-radius: 20px; border-bottom: 2px solid var(--orange); } }
+@keyframes subir { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.hoja .icono { font-size: 40px; margin-bottom: 6px; }
+.hoja h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+.hoja p { font-size: 13px; color: var(--text-soft); margin-bottom: 16px; }
+.hoja button, .hoja a { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 12px; border: none; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; text-decoration: none; margin-top: 10px; }
+.btn-wsp { background: #25d366; color: #0b192c; box-shadow: 0 4px 14px rgba(37,211,102,0.35); }
+.btn-sec { background: var(--surface-alt); color: var(--text); border: 1px solid var(--border) !important; }
+.btn-txt { background: none; color: var(--text-soft); }
+
+/* Mapa de ruta a pantalla completa */
+#mapaRuta { position: fixed; inset: 0; z-index: 70; background: var(--bg); display: none; flex-direction: column; }
+#mapaRuta.visible { display: flex; }
+.mapa-top { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(11,25,44,0.97); border-bottom: 1px solid var(--border); }
+.mapa-top button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-alt); color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; }
+.mapa-top .info { min-width: 0; }
+.mapa-top .titulo { font-weight: 800; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mapa-top .sub { font-size: 12px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#mapa { flex: 1; background: #1a2b40; }
+.mapa-panel { background: var(--surface); border-top: 2px solid var(--orange); padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
+.mapa-eta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.mapa-eta .grande { font-size: 22px; font-weight: 800; color: var(--orange); }
+.mapa-eta .chico { font-size: 13px; color: var(--text-soft); font-weight: 600; }
+#mapaEstado { font-size: 12px; color: var(--text-soft); margin-bottom: 10px; }
+.mapa-botones { display: flex; gap: 8px; }
+.mapa-botones a, .mapa-botones button { flex: 1; text-align: center; padding: 11px 6px; border-radius: 10px; background: var(--surface-alt); color: #fff; font: 700 13px 'Plus Jakarta Sans', sans-serif; text-decoration: none; border: 1px solid var(--border); cursor: pointer; }
+#btnCentrar { position: absolute; right: 14px; bottom: 170px; z-index: 500; width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--orange); background: var(--surface); color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+
+/* Prueba de entrega / motivo de no entrega */
+.hoja-form { text-align: left; max-height: 92vh; overflow-y: auto; }
+.hoja-form h3 { text-align: center; }
+.hoja-form > p { text-align: center; }
+.bloque { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+.bloque-tit { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; margin-bottom: 10px; }
+.hoja .bloque-tit button { display: inline-block; width: auto; margin: 0; padding: 4px 10px; font-size: 12px; background: var(--surface-alt); color: var(--text-soft); border: 1px solid var(--border); border-radius: 8px; }
+.btn-foto { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 12px; border: 2px dashed var(--orange); color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; background: var(--orange-soft); }
+.foto-previa { width: 100%; max-height: 240px; object-fit: cover; border-radius: 10px; margin-top: 10px; display: block; }
+#padFirma { width: 100%; height: 170px; border-radius: 10px; background: #fff; display: block; cursor: crosshair; }
+.firma-guia { font-size: 11px; color: var(--text-soft); text-align: center; margin-top: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.hoja .chips button { display: inline-flex; width: auto; margin: 0; padding: 8px 12px; font-size: 13px; font-weight: 700; border-radius: 20px; background: var(--surface-alt); color: var(--text-soft); border: 1px solid var(--border); }
+.hoja .chips button.activo { background: var(--orange); color: #fff; border-color: var(--orange); }
+.hoja-form input[type=text], .hoja-form textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-alt); color: #fff; font: 14px 'Plus Jakarta Sans', sans-serif; outline: none; }
+.hoja-form textarea { min-height: 70px; resize: vertical; }
+.hoja-form input:focus, .hoja-form textarea:focus { border-color: var(--orange); }
+.ayuda-prueba { font-size: 12px; color: var(--text-soft); text-align: center; margin: 4px 0; }
+.btn-confirmar { background: var(--green); color: #fff; box-shadow: 0 4px 14px rgba(16,185,129,0.35); }
+.btn-confirmar:disabled { opacity: .45; box-shadow: none; cursor: not-allowed; }
+.btn-rojo { background: var(--red); color: #fff; }
+.btn-rojo:disabled { opacity: .45; cursor: not-allowed; }
+.oculto { display: none !important; }
+
+#toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px); background: var(--surface-alt); border: 1px solid var(--border); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transition: all .25s; z-index: 90; max-width: calc(100% - 32px); text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+#toast.visible { opacity: 1; transform: translateX(-50%); }
 </style>
 </head>
 <body>
@@ -74,6 +161,9 @@ select:focus { border-color: var(--orange); }
   </div>
   <button id="salir">Salir</button>
 </header>
+
+<div id="conexionBanner" class="conexion-banner oculto"></div>
+<div id="gpsBanner"><div class="caja"><span class="punto"></span><span id="gpsTexto"></span></div></div>
 
 <button class="fab" id="btnEscanear">📷 Escanear etiqueta</button>
 
@@ -87,6 +177,83 @@ select:focus { border-color: var(--orange); }
   <div class="msg">Cargando tus entregas...</div>
 </main>
 
+<!-- Hoja que aparece al marcar "En camino" -->
+<div class="overlay" id="hojaCamino">
+  <div class="hoja">
+    <div class="icono">🚚</div>
+    <h3>¡Pedido en camino!</h3>
+    <p id="hojaTexto">Tu ubicación se está compartiendo con el cliente.</p>
+    <a class="btn-wsp" id="hojaWsp" target="_blank" rel="noopener">💬 Avisar al cliente por WhatsApp</a>
+    <button class="btn-sec" id="hojaCopiar">🔗 Copiar enlace de seguimiento</button>
+    <button class="btn-sec" id="hojaRuta">🧭 Ver ruta en el mapa</button>
+    <button class="btn-txt" id="hojaCerrar">Cerrar</button>
+  </div>
+</div>
+
+<!-- Prueba de entrega: con foto o firma el pedido queda Entregado -->
+<div class="overlay" id="modalPrueba">
+  <div class="hoja hoja-form">
+    <h3>📦 Prueba de entrega</h3>
+    <p id="pruebaSub"></p>
+    <div class="bloque">
+      <div class="bloque-tit">📸 Foto del paquete entregado</div>
+      <label class="btn-foto"><span id="textoBtnFoto">Tomar foto</span><input type="file" accept="image/*" capture="environment" id="inputFoto" hidden></label>
+      <img id="fotoPrevia" class="foto-previa oculto" alt="Foto de la entrega">
+    </div>
+    <div class="bloque">
+      <div class="bloque-tit">✍️ Firma de quien recibe <button type="button" id="btnLimpiarFirma">Borrar</button></div>
+      <canvas id="padFirma"></canvas>
+      <div class="firma-guia">Firme con el dedo dentro del recuadro</div>
+    </div>
+    <div class="bloque">
+      <div class="bloque-tit">🙋 ¿Quién recibe? (opcional)</div>
+      <div class="chips" id="chipsRelacion"></div>
+      <input type="text" id="recibeNombre" placeholder="Nombre de quien recibe" autocomplete="off">
+    </div>
+    <div class="ayuda-prueba" id="pruebaAyuda">Toma una foto o pide la firma para confirmar la entrega.</div>
+    <button class="btn-confirmar" id="btnConfirmarEntrega" disabled>✅ Confirmar entrega</button>
+    <button class="btn-txt" id="btnCancelarPrueba">Cancelar</button>
+  </div>
+</div>
+
+<!-- Motivo de no entrega -->
+<div class="overlay" id="modalMotivo">
+  <div class="hoja hoja-form">
+    <h3>⚠️ No se pudo entregar</h3>
+    <p id="motivoSub"></p>
+    <div class="bloque">
+      <div class="bloque-tit">Motivo</div>
+      <div class="chips" id="chipsMotivo"></div>
+      <textarea id="motivoNota" placeholder="Comentario (opcional): ej. nadie abrió, se dejó aviso"></textarea>
+    </div>
+    <button class="btn-rojo" id="btnConfirmarMotivo" disabled>Marcar como no entregado</button>
+    <button class="btn-txt" id="btnCancelarMotivo">Cancelar</button>
+  </div>
+</div>
+
+<!-- Mapa de ruta dentro de la app: así el GPS sigue enviando la ubicación -->
+<div id="mapaRuta">
+  <div class="mapa-top">
+    <button id="mapaVolver" aria-label="Volver">←</button>
+    <div class="info">
+      <div class="titulo" id="mapaTitulo">Ruta</div>
+      <div class="sub" id="mapaDireccion"></div>
+    </div>
+  </div>
+  <div id="mapa"></div>
+  <button id="btnCentrar" title="Centrar en mi ubicación">◎</button>
+  <div class="mapa-panel">
+    <div class="mapa-eta"><span class="grande" id="mapaEta">—</span><span class="chico" id="mapaDist"></span></div>
+    <div id="mapaEstado">Buscando la dirección...</div>
+    <div class="mapa-botones">
+      <a id="mapaGoogle" target="_blank" rel="noopener">Google Maps</a>
+      <a id="mapaWaze" target="_blank" rel="noopener">Waze</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
@@ -97,13 +264,29 @@ firebase.initializeApp({
   appId: "1:831323740955:web:60d96b496aefb0047151be"
 });
 var auth = firebase.auth(), db = firebase.firestore();
+// Modo sin señal: los pedidos y cambios se guardan en el celular y se envían al volver la conexión.
+db.enablePersistence({ synchronizeTabs: true }).catch(function (e) { console.warn("Sin modo offline:", e.code); });
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
 var lista = document.getElementById("lista");
-var estados = { pendiente: "Pendiente", en_camino: "En camino", entregado: "Entregado", no_entregado: "No entregado", devuelto: "Devuelto" };
+var estados = Seguimiento.ESTADOS;
+var pedidos = {};        // docId -> datos del pedido (del último snapshot)
+var perfil = null;
 
 function esc(t) { var d = document.createElement("div"); d.textContent = t == null ? "" : String(t); return d.innerHTML; }
 function aviso(t) { lista.innerHTML = "<div class='msg'>" + esc(t) + "</div>"; }
 
+var toastTimer = null;
+function toast(t) {
+  var el = document.getElementById("toast");
+  el.textContent = t;
+  el.classList.add("visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.classList.remove("visible"); }, 3200);
+}
+
 document.getElementById("salir").addEventListener("click", function () {
+  if (contarEnCamino() > 0 && !confirm("Tienes pedidos en camino. Si sales, tus clientes dejarán de ver tu ubicación. ¿Salir igual?")) return;
+  detenerGps();
   auth.signOut().then(function () { location.href = "login.html"; });
 });
 
@@ -113,49 +296,609 @@ auth.onAuthStateChanged(function (u) {
     var p = d.exists ? d.data() : null;
     if (!p || p.activo === false) { auth.signOut(); return; }
     if (p.rol === "admin") { location.href = "panel-admin.html"; return; }
+    if (p.rol === "vendedor" || p.rol === "cliente") { location.href = "portal-cliente.html"; return; }
     if (p.rol !== "repartidor" || !p.repartidorId) { aviso("Tu cuenta no tiene un repartidor asociado. Avisa al administrador."); return; }
+    perfil = p;
     document.getElementById("saludo").textContent = "Hola, " + (p.nombre || "repartidor");
-    db.collection("Pedidos").where("repartidor_id", "==", p.repartidorId).onSnapshot(pintar, function (e) {
+    db.collection("Pedidos").where("repartidor_id", "==", p.repartidorId).onSnapshot({ includeMetadataChanges: true }, pintar, function (e) {
       aviso("No se pudieron cargar los pedidos: " + e.message);
     });
   }).catch(function (e) { aviso("Error al leer tu perfil: " + e.message); });
 });
 
+// --- CONEXIÓN ---
+
+var cambiosPendientes = 0;
+
+function pintarConexion() {
+  var b = document.getElementById("conexionBanner");
+  if (!navigator.onLine) {
+    b.className = "conexion-banner sin";
+    b.textContent = "📴 Sin señal. Puedes seguir trabajando: tus entregas se guardan en el celular" +
+      (cambiosPendientes ? " (" + cambiosPendientes + " por enviar)" : "") + " y se envían solas al volver la conexión.";
+  } else if (cambiosPendientes) {
+    b.className = "conexion-banner enviando";
+    b.textContent = "⏳ Enviando " + cambiosPendientes + (cambiosPendientes === 1 ? " cambio pendiente..." : " cambios pendientes...");
+  } else {
+    b.className = "conexion-banner oculto";
+  }
+}
+window.addEventListener("online", function () {
+  pintarConexion();
+  toast("📶 Conexión recuperada: enviando cambios");
+  gps.ultimoEnvioMs = 0;
+  enviarUbicacion();
+});
+window.addEventListener("offline", pintarConexion);
+
+// --- LISTA DE PEDIDOS ---
+
+var ordenEstado = { en_camino: 0, pendiente: 1, no_entregado: 2, entregado: 3, devuelto: 4 };
+
+function finDeHoy() { var d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); }
+function esProgramadoFuturo(p) {
+  return (p.estado || "pendiente") === "pendiente" && p.fecha_programada && p.fecha_programada.toMillis && p.fecha_programada.toMillis() > finDeHoy();
+}
+
 function pintar(snap) {
+  pedidos = {};
+  snap.forEach(function (doc) { pedidos[doc.id] = doc.data(); });
+  cambiosPendientes = snap.docs.filter(function (d) { return d.metadata.hasPendingWrites; }).length;
+  pintarConexion();
+  actualizarGps();
   if (snap.empty) { aviso("No tienes pedidos asignados."); return; }
-  lista.innerHTML = "";
-  snap.forEach(function (doc) {
-    var p = doc.data(), est = p.estado || "pendiente";
-    var tel = String(p.cliente_telefono || "").replace(/\D/g, "");
-    var mapa = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.direccion_entrega || "");
-    var div = document.createElement("div");
-    div.className = "pedido";
-    div.setAttribute("data-cod", String(p.codigo_barra || ""));
-    div.setAttribute("data-docid", doc.id);
-    div.innerHTML =
-      "<div class='top'><span class='cod'>📦 " + esc(p.codigo_barra || doc.id) + "</span><span class='badge " + esc(est) + "'>" + esc(estados[est] || est) + "</span></div>" +
-      "<div class='det'>Cliente: " + esc(p.cliente_nombre || "-") + "</div>" +
-      "<div class='det'>" + esc(p.direccion_entrega || "Sin dirección") + "</div>" +
-      "<div class='enlaces'><a href='" + mapa + "' target='_blank' rel='noopener'>Abrir en Maps</a>" +
-      (tel ? "<a href='https://wa.me/" + tel + "' target='_blank' rel='noopener'>WhatsApp</a><a href='tel:+" + tel + "'>Llamar</a>" : "") + "</div>" +
-      "<select data-id='" + esc(doc.id) + "'>" + Object.keys(estados).map(function (k) {
-        return "<option value='" + k + "'" + (k === est ? " selected" : "") + ">" + estados[k] + "</option>";
-      }).join("") + "</select>";
-    lista.appendChild(div);
+
+  var ids = Object.keys(pedidos).sort(function (a, b) {
+    return (ordenEstado[pedidos[a].estado || "pendiente"] || 0) - (ordenEstado[pedidos[b].estado || "pendiente"] || 0);
   });
-  lista.querySelectorAll("select").forEach(function (s) {
-    s.addEventListener("change", function () {
-      db.collection("Pedidos").doc(s.getAttribute("data-id")).update({ estado: s.value })
-        .catch(function (e) { alert("No se pudo actualizar: " + e.message); });
+  var activos = ids.filter(function (id) { return ["entregado", "devuelto"].indexOf(pedidos[id].estado) === -1 && !esProgramadoFuturo(pedidos[id]); });
+  var programados = ids.filter(function (id) { return esProgramadoFuturo(pedidos[id]); });
+  var cerrados = ids.filter(function (id) { return activos.indexOf(id) === -1 && programados.indexOf(id) === -1; });
+
+  lista.innerHTML = "";
+  if (activos.length) {
+    lista.insertAdjacentHTML("beforeend", "<div class='seccion'>Por entregar (" + activos.length + ")</div>");
+    activos.forEach(function (id) { lista.appendChild(tarjeta(id)); });
+  } else {
+    lista.insertAdjacentHTML("beforeend", "<div class='msg'>🎉 ¡Terminaste todas tus entregas!</div>");
+  }
+  if (programados.length) {
+    lista.insertAdjacentHTML("beforeend", "<div class='seccion'>📅 Programados para otro día (" + programados.length + ")</div>");
+    programados.forEach(function (id) { lista.appendChild(tarjeta(id)); });
+  }
+  if (cerrados.length) {
+    lista.insertAdjacentHTML("beforeend", "<div class='seccion'>Finalizados (" + cerrados.length + ")</div>");
+    cerrados.forEach(function (id) { lista.appendChild(tarjeta(id)); });
+  }
+}
+
+function tarjeta(id) {
+  var p = pedidos[id], est = p.estado || "pendiente";
+  var tel = String(p.cliente_telefono || "").replace(/\D/g, "");
+  var div = document.createElement("div");
+  div.className = "pedido" + (est === "en_camino" ? " activo-ruta" : "");
+  div.setAttribute("data-cod", String(p.codigo_barra || ""));
+  div.setAttribute("data-docid", id);
+
+  var acciones = "";
+  if (est === "pendiente" || est === "no_entregado") {
+    acciones = "<div class='acciones'><button class='btn-camino' data-accion='camino'>🚚 Voy en camino</button></div>";
+  } else if (est === "en_camino") {
+    acciones = "<div class='acciones'><button class='btn-entregado' data-accion='entregado'>✅ Entregado</button>" +
+      "<button class='btn-fallido' data-accion='fallido'>No entregado</button></div>";
+  }
+
+  div.innerHTML =
+    "<div class='top'><span class='cod'>📦 " + esc(p.codigo_barra || id) + "</span><span class='badge " + esc(est) + "'>" + esc(estados[est] || est) + "</span></div>" +
+    "<div class='det'>Cliente: " + esc(p.cliente_nombre || "-") + "</div>" +
+    "<div class='det'>📍 " + esc(p.direccion_entrega || "Sin dirección") + "</div>" +
+    (p.referencia ? "<div class='det'>ℹ️ " + esc(p.referencia) + "</div>" : "") +
+    (est === "pendiente" && p.fecha_programada && p.fecha_programada.toDate ? "<div class='det' style='color:#60a5fa'>📅 Programado para el " + esc(p.fecha_programada.toDate().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "short" })) + "</div>" : "") +
+    (p.intentos && est !== "entregado" ? "<div class='det' style='color:#f59e0b'>🔁 Intento " + (est === "no_entregado" ? p.intentos : p.intentos + 1) + (p.intentos >= 2 && est !== "no_entregado" ? " (último antes de devolución)" : "") + "</div>" : "") +
+    (est === "no_entregado" && p.no_entrega ? "<div class='det' style='color:#f87171'>⚠️ " + esc(p.no_entrega.motivo) + (p.no_entrega.nota ? ": " + esc(p.no_entrega.nota) : "") + "</div>" : "") +
+    (est === "entregado" && p.entrega ? "<div class='det' style='color:#10b981'>✅ Recibió: " + esc(p.entrega.recibe_nombre || p.entrega.relacion || "registrado con " + (p.entrega.con_foto ? "foto" : "firma")) + (p.entrega.recibe_nombre && p.entrega.relacion ? " (" + esc(p.entrega.relacion) + ")" : "") + "</div>" : "") +
+    acciones +
+    "<div class='enlaces'>" +
+      "<button class='btn-ruta' data-accion='ruta'>🧭 Ruta</button>" +
+      "<a href='" + esc(Seguimiento.urlGoogleMaps(p.direccion_entrega)) + "' target='_blank' rel='noopener'>Maps</a>" +
+      (tel ? "<a href='https://wa.me/" + tel + "' target='_blank' rel='noopener'>WhatsApp</a><a href='tel:+" + tel + "'>Llamar</a>" : "") +
+      (est === "en_camino" ? "<button data-accion='avisar'>🔗 Enlace</button>" : "") +
+    "</div>" +
+    "<div class='select-label'>Cambiar estado manualmente</div>" +
+    "<select data-id='" + esc(id) + "'>" + Object.keys(estados).map(function (k) {
+      return "<option value='" + k + "'" + (k === est ? " selected" : "") + ">" + estados[k] + "</option>";
+    }).join("") + "</select>";
+
+  div.querySelectorAll("[data-accion]").forEach(function (b) {
+    b.addEventListener("click", function () { accion(id, b.getAttribute("data-accion"), b); });
+  });
+  div.querySelector("select").addEventListener("change", function (e) {
+    var sel = e.target, nuevo = sel.value;
+    // Entregado y No entregado siempre pasan por su pantalla (prueba o motivo).
+    if (nuevo === "entregado") { sel.value = est; abrirPrueba(id); return; }
+    if (nuevo === "no_entregado") { sel.value = est; abrirMotivo(id); return; }
+    cambiarEstado(id, nuevo).catch(function () { sel.value = est; });
+  });
+  return div;
+}
+
+function accion(id, cual, boton) {
+  var p = pedidos[id];
+  var cod = p.codigo_barra || id;
+  if (cual === "camino") {
+    boton.disabled = true;
+    cambiarEstado(id, "en_camino").catch(function () { boton.disabled = false; });
+  } else if (cual === "entregado") {
+    abrirPrueba(id);
+  } else if (cual === "fallido") {
+    abrirMotivo(id);
+  } else if (cual === "ruta") {
+    abrirMapa(id);
+  } else if (cual === "avisar") {
+    mostrarHojaCamino(id);
+  }
+}
+
+// Cambia el estado del pedido y actualiza la ficha pública que ve el cliente.
+// El estado del pedido se guarda primero: si la ficha falla, la entrega igual queda registrada.
+// extra: datos adicionales del pedido ({ entrega } o { no_entrega }).
+function cambiarEstado(id, nuevo, extra) {
+  var p = pedidos[id];
+  var previo = p.estado || "pendiente";
+  if (previo === nuevo) return Promise.resolve();
+  var cambios = Object.assign({ estado: nuevo }, extra || {});
+  if (nuevo === "entregado") cambios.fecha_entrega = firebase.firestore.FieldValue.serverTimestamp();
+
+  // Sin señal el cambio queda guardado en el celular y se envía solo: no se espera al servidor.
+  return Seguimiento.sinEsperar(db.collection("Pedidos").doc(id).update(cambios)).then(function () {
+    p.estado = nuevo;
+    Object.assign(p, extra || {});
+    var sufijo = navigator.onLine ? "" : " (se enviará al volver la señal)";
+    if (nuevo === "entregado") toast("✅ Pedido " + (p.codigo_barra || id) + " entregado" + sufijo);
+    else if (nuevo === "no_entregado") toast("Pedido marcado como no entregado" + sufijo);
+    return Seguimiento.sincronizar(db, id, p, { estadoAnterior: previo, noEsperar: true }).catch(function (e) {
+      console.warn("No se pudo actualizar el seguimiento:", e);
+      return null;
     });
+  }).then(function (token) {
+    actualizarGps();
+    if (nuevo === "en_camino") {
+      gps.ultimoEnvioMs = 0;
+      enviarUbicacion();
+      if (token) mostrarHojaCamino(id, token);
+      else toast("Pedido en camino (no se pudo generar el enlace para el cliente)");
+    }
+  }).catch(function (e) {
+    if (!e.avisado) alert("No se pudo actualizar: " + e.message);
+    e.avisado = true;
+    throw e;
   });
 }
+
+// --- PRUEBA DE ENTREGA ---
+
+var pruebaId = null, pruebaFoto = null, pruebaRelacion = "", padFirma = null;
+
+function pintarChips(contenedorId, opciones, alElegir) {
+  var cont = document.getElementById(contenedorId);
+  cont.innerHTML = "";
+  opciones.forEach(function (op) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = op;
+    b.addEventListener("click", function () {
+      var yaActivo = b.classList.contains("activo");
+      cont.querySelectorAll("button").forEach(function (x) { x.classList.remove("activo"); });
+      if (!yaActivo) b.classList.add("activo");
+      alElegir(yaActivo ? "" : op);
+    });
+    cont.appendChild(b);
+  });
+}
+
+function abrirPrueba(id) {
+  var p = pedidos[id];
+  if (!p) return;
+  if (p.estado === "entregado") { toast("Este pedido ya está entregado."); return; }
+  pruebaId = id;
+  pruebaFoto = null;
+  pruebaRelacion = "";
+  document.getElementById("pruebaSub").textContent = (p.codigo_barra || id) + " · " + (p.cliente_nombre || "Cliente");
+  document.getElementById("fotoPrevia").classList.add("oculto");
+  document.getElementById("textoBtnFoto").textContent = "Tomar foto";
+  document.getElementById("inputFoto").value = "";
+  document.getElementById("recibeNombre").value = "";
+  pintarChips("chipsRelacion", Entrega.RELACIONES, function (v) {
+    pruebaRelacion = v;
+    // Si recibe el titular, se sugiere su nombre.
+    var campo = document.getElementById("recibeNombre");
+    if (v === "Titular" && !campo.value) campo.value = p.cliente_nombre || "";
+  });
+  document.getElementById("modalPrueba").classList.add("visible");
+  if (!padFirma) padFirma = Entrega.PadFirma(document.getElementById("padFirma"));
+  // El canvas necesita estar visible para medir su tamaño.
+  requestAnimationFrame(function () { padFirma.ajustar(); revisarPrueba(); });
+}
+
+function revisarPrueba() {
+  var listo = !!pruebaFoto || (padFirma && !padFirma.vacio());
+  document.getElementById("btnConfirmarEntrega").disabled = !listo;
+  document.getElementById("pruebaAyuda").textContent = listo
+    ? "Listo. Al confirmar, el pedido quedará como Entregado."
+    : "Toma una foto o pide la firma para confirmar la entrega.";
+}
+
+document.getElementById("inputFoto").addEventListener("change", function (e) {
+  var archivo = e.target.files && e.target.files[0];
+  if (!archivo) return;
+  document.getElementById("textoBtnFoto").textContent = "Procesando foto...";
+  Entrega.comprimirFoto(archivo).then(function (dato) {
+    pruebaFoto = dato;
+    var img = document.getElementById("fotoPrevia");
+    img.src = dato;
+    img.classList.remove("oculto");
+    document.getElementById("textoBtnFoto").textContent = "🔄 Cambiar foto";
+    revisarPrueba();
+  }).catch(function (err) {
+    document.getElementById("textoBtnFoto").textContent = "Tomar foto";
+    alert(err.message);
+  });
+});
+
+document.getElementById("padFirma").addEventListener("pointerup", function () { setTimeout(revisarPrueba, 0); });
+document.getElementById("btnLimpiarFirma").addEventListener("click", function () { padFirma.limpiar(); revisarPrueba(); });
+document.getElementById("btnCancelarPrueba").addEventListener("click", function () {
+  document.getElementById("modalPrueba").classList.remove("visible");
+  pruebaId = null;
+});
+
+// El pedido necesita su ficha de seguimiento (token) para guardar la evidencia.
+function asegurarToken(id) {
+  var p = pedidos[id];
+  if (p.tracking_id) return Promise.resolve(p.tracking_id);
+  return Seguimiento.sincronizar(db, id, p, { estadoAnterior: p.estado || "pendiente", noEsperar: true });
+}
+
+document.getElementById("btnConfirmarEntrega").addEventListener("click", function () {
+  var id = pruebaId, p = pedidos[id];
+  if (!id || !p) return;
+  var firma = padFirma && !padFirma.vacio() ? padFirma.aImagen() : null;
+  if (!pruebaFoto && !firma) { revisarPrueba(); return; }
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
+  var recibe = document.getElementById("recibeNombre").value.trim();
+  var entrega = {
+    recibe_nombre: recibe,
+    relacion: pruebaRelacion,
+    con_foto: !!pruebaFoto,
+    con_firma: !!firma,
+    fecha: firebase.firestore.Timestamp.now()
+  };
+
+  asegurarToken(id).then(function (token) {
+    return Seguimiento.sinEsperar(db.collection("evidencias").doc(token).set({
+      pedido_id: id,
+      repartidor_id: perfil.repartidorId,
+      foto: pruebaFoto || null,
+      firma: firma,
+      recibe_nombre: recibe,
+      relacion: pruebaRelacion,
+      ubicacion: gps.ultima ? { lat: gps.ultima.lat, lng: gps.ultima.lng } : null,
+      fecha: firebase.firestore.FieldValue.serverTimestamp()
+    }));
+  }).then(function () {
+    return cambiarEstado(id, "entregado", { entrega: entrega });
+  }).then(function () {
+    document.getElementById("modalPrueba").classList.remove("visible");
+    pruebaId = null;
+  }).catch(function (e) {
+    if (!e.avisado) alert("No se pudo guardar la prueba de entrega: " + e.message);
+  }).then(function () {
+    btn.textContent = "✅ Confirmar entrega";
+    revisarPrueba();
+  });
+});
+
+// --- MOTIVO DE NO ENTREGA ---
+
+var motivoId = null, motivoElegido = "";
+
+function abrirMotivo(id) {
+  var p = pedidos[id];
+  if (!p) return;
+  motivoId = id;
+  motivoElegido = "";
+  document.getElementById("motivoSub").textContent = (p.codigo_barra || id) + " · " + (p.cliente_nombre || "Cliente");
+  document.getElementById("motivoNota").value = "";
+  document.getElementById("btnConfirmarMotivo").disabled = true;
+  pintarChips("chipsMotivo", Entrega.MOTIVOS, function (v) {
+    motivoElegido = v;
+    document.getElementById("btnConfirmarMotivo").disabled = !v;
+  });
+  document.getElementById("modalMotivo").classList.add("visible");
+}
+
+document.getElementById("btnCancelarMotivo").addEventListener("click", function () {
+  document.getElementById("modalMotivo").classList.remove("visible");
+  motivoId = null;
+});
+
+document.getElementById("btnConfirmarMotivo").addEventListener("click", function () {
+  var id = motivoId;
+  if (!id || !motivoElegido) return;
+  var btn = this;
+  btn.disabled = true;
+  var ahora = firebase.firestore.Timestamp.now();
+  var motivo = { motivo: motivoElegido, nota: document.getElementById("motivoNota").value.trim(), fecha: ahora };
+  // Cada intento fallido queda registrado (para el admin y los reportes por repartidor).
+  cambiarEstado(id, "no_entregado", {
+    no_entrega: motivo,
+    intentos: (pedidos[id].intentos || 0) + 1,
+    intentos_detalle: firebase.firestore.FieldValue.arrayUnion(Object.assign({ repartidor_id: perfil.repartidorId, repartidor_nombre: perfil.nombre || "" }, motivo))
+  }).then(function () {
+    document.getElementById("modalMotivo").classList.remove("visible");
+    motivoId = null;
+  }).catch(function () { btn.disabled = false; });
+});
+
+// --- AVISO AL CLIENTE ---
+
+var hojaPedidoId = null;
+
+function mostrarHojaCamino(id, token) {
+  var p = pedidos[id];
+  token = token || (p && p.tracking_id);
+  if (!p || !token) { toast("Este pedido aún no tiene enlace de seguimiento."); return; }
+  hojaPedidoId = id;
+  var enlace = Seguimiento.url(token);
+  var tel = String(p.cliente_telefono || "").replace(/\D/g, "");
+  var nombreCliente = Seguimiento.primerNombre(p.cliente_nombre);
+  var nombreRepartidor = Seguimiento.primerNombre(perfil && perfil.nombre);
+  var mensaje =
+    "Hola" + (nombreCliente ? " " + nombreCliente : "") + " 👋" +
+    (nombreRepartidor ? " Soy " + nombreRepartidor + " de" : " Te escribimos de") + " *Transporte Leen*.\n" +
+    "Tu pedido " + (p.codigo_barra || "") + " ya va en camino 🚚\n\n" +
+    "Sigue su ubicación en tiempo real aquí:\n" + enlace;
+
+  var wsp = document.getElementById("hojaWsp");
+  if (tel) {
+    wsp.style.display = "";
+    wsp.href = "https://wa.me/" + tel + "?text=" + encodeURIComponent(mensaje);
+    document.getElementById("hojaTexto").textContent = "Tu ubicación se comparte con " + (nombreCliente || "el cliente") + ". Avísale para que pueda seguir su pedido.";
+  } else {
+    wsp.style.display = "none";
+    document.getElementById("hojaTexto").textContent = "El cliente no tiene teléfono registrado. Copia el enlace y envíaselo por otro medio.";
+  }
+  document.getElementById("hojaCopiar").onclick = function () {
+    copiar(enlace).then(function () { toast("🔗 Enlace copiado"); });
+  };
+  document.getElementById("hojaCamino").classList.add("visible");
+}
+
+function copiar(texto) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto).catch(function () { prompt("Copia el enlace:", texto); });
+  prompt("Copia el enlace:", texto);
+  return Promise.resolve();
+}
+
+function cerrarHoja() { document.getElementById("hojaCamino").classList.remove("visible"); }
+document.getElementById("hojaCerrar").addEventListener("click", cerrarHoja);
+document.getElementById("hojaWsp").addEventListener("click", function () { setTimeout(cerrarHoja, 400); });
+document.getElementById("hojaRuta").addEventListener("click", function () { cerrarHoja(); if (hojaPedidoId) abrirMapa(hojaPedidoId); });
+
+// --- GPS: se comparte solo mientras hay pedidos "en camino" (o el mapa de ruta está abierto) ---
+
+var gps = { watchId: null, ultima: null, ultimaEnviada: null, ultimoEnvioMs: 0, error: "", wakeLock: null };
+var mapaAbierto = false;
+
+function idsEnCamino() {
+  return Object.keys(pedidos).filter(function (id) { return pedidos[id].estado === "en_camino"; });
+}
+function contarEnCamino() { return idsEnCamino().length; }
+
+function actualizarGps() {
+  var compartir = contarEnCamino() > 0;
+  if ((compartir || mapaAbierto) && gps.watchId === null) iniciarGps();
+  if (!compartir && !mapaAbierto && gps.watchId !== null) detenerGps();
+  if (compartir) pedirPantallaEncendida(); else soltarPantallaEncendida();
+  pintarBanner();
+}
+
+function iniciarGps() {
+  if (!("geolocation" in navigator)) { gps.error = "Este celular no permite usar el GPS en el navegador."; pintarBanner(); return; }
+  gps.watchId = navigator.geolocation.watchPosition(alMoverse, function (e) {
+    gps.error = e.code === 1
+      ? "Activa el permiso de ubicación para que tus clientes vean dónde vas."
+      : "No se pudo obtener tu ubicación. Revisa que el GPS esté encendido.";
+    pintarBanner();
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}
+
+function detenerGps() {
+  if (gps.watchId !== null) navigator.geolocation.clearWatch(gps.watchId);
+  gps.watchId = null;
+  soltarPantallaEncendida();
+}
+
+function alMoverse(pos) {
+  gps.ultima = { lat: pos.coords.latitude, lng: pos.coords.longitude, precision: pos.coords.accuracy };
+  gps.error = "";
+  pintarBanner();
+  enviarUbicacion();
+  if (mapaAbierto) moverEnMapa();
+}
+
+// Envía como máximo cada 8 s si se movió, y cada 30 s aunque esté detenido (para que el cliente vea que sigue activo).
+function enviarUbicacion() {
+  var ids = idsEnCamino().filter(function (id) { return pedidos[id].tracking_id; });
+  // Sin señal no se acumulan ubicaciones viejas: se envía la actual al volver la conexión.
+  if (!ids.length || !gps.ultima || !navigator.onLine) return;
+  var ahora = Date.now(), pasado = ahora - gps.ultimoEnvioMs;
+  var movido = gps.ultimaEnviada ? Seguimiento.distanciaMetros(gps.ultimaEnviada, gps.ultima) : Infinity;
+  if (pasado < 8000 || (pasado < 30000 && movido < 20)) return;
+  gps.ultimoEnvioMs = ahora;
+  gps.ultimaEnviada = gps.ultima;
+  Seguimiento.publicarUbicacion(db, ids.map(function (id) { return pedidos[id].tracking_id; }), gps.ultima)
+    .catch(function (e) { console.warn("No se pudo enviar la ubicación:", e); });
+}
+setInterval(enviarUbicacion, 30000);
+
+function pintarBanner() {
+  var n = contarEnCamino();
+  var banner = document.getElementById("gpsBanner");
+  var caja = banner.querySelector(".caja");
+  if (!n) { banner.style.display = "none"; return; }
+  banner.style.display = "block";
+  caja.classList.toggle("error", !!gps.error);
+  document.getElementById("gpsTexto").textContent = gps.error ||
+    (gps.ultima
+      ? "Compartiendo tu ubicación con " + n + (n === 1 ? " cliente" : " clientes") + ". Mantén la app abierta."
+      : "Activando GPS...");
+}
+
+// Evita que la pantalla se apague mientras hay entregas en camino (si el celular lo permite).
+function pedirPantallaEncendida() {
+  if (gps.wakeLock || !("wakeLock" in navigator) || document.visibilityState !== "visible") return;
+  navigator.wakeLock.request("screen").then(function (w) {
+    gps.wakeLock = w;
+    w.addEventListener("release", function () { gps.wakeLock = null; });
+  }).catch(function () {});
+}
+function soltarPantallaEncendida() {
+  if (gps.wakeLock) { gps.wakeLock.release().catch(function () {}); gps.wakeLock = null; }
+}
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "visible") {
+    actualizarGps();
+    gps.ultimoEnvioMs = 0;
+    enviarUbicacion();
+  }
+});
+
+// --- MAPA DE RUTA ---
+
+var mapa = null, marcadorYo = null, marcadorDestino = null, lineaRuta = null;
+var mapaPedidoId = null, destinoMapa = null, seguirme = true;
+var rutaDesde = null, rutaMs = 0, rutaPrimera = true;
+
+function abrirMapa(id) {
+  var p = pedidos[id];
+  mapaPedidoId = id;
+  destinoMapa = null;
+  rutaDesde = null; rutaMs = 0; rutaPrimera = true; seguirme = true;
+  document.getElementById("mapaTitulo").textContent = "📦 " + (p.codigo_barra || id) + " · " + (p.cliente_nombre || "Cliente");
+  document.getElementById("mapaDireccion").textContent = p.direccion_entrega || "Sin dirección";
+  document.getElementById("mapaGoogle").href = Seguimiento.urlGoogleMaps(p.direccion_entrega);
+  document.getElementById("mapaWaze").href = Seguimiento.urlWaze(p.direccion_entrega, p.destino);
+  document.getElementById("mapaEta").textContent = "—";
+  document.getElementById("mapaDist").textContent = "";
+  document.getElementById("mapaEstado").textContent = "Buscando la dirección en el mapa...";
+  document.getElementById("mapaRuta").classList.add("visible");
+  history.pushState({ mapa: true }, "");
+
+  if (!mapa) {
+    mapa = L.map("mapa", { zoomControl: false }).setView([-33.45, -70.66], 12);
+    Seguimiento.capaBase(mapa);
+    mapa.on("dragstart", function () { seguirme = false; });
+  }
+  setTimeout(function () { mapa.invalidateSize(); }, 50);
+  if (lineaRuta) { mapa.removeLayer(lineaRuta); lineaRuta = null; }
+  if (marcadorDestino) { mapa.removeLayer(marcadorDestino); marcadorDestino = null; }
+
+  mapaAbierto = true;
+  actualizarGps();
+  if (gps.ultima) moverEnMapa();
+
+  obtenerDestino(id).then(function (dest) {
+    if (mapaPedidoId !== id) return;
+    if (!dest) {
+      document.getElementById("mapaEstado").textContent = "⚠️ No encontramos esta dirección en el mapa. Usa Google Maps o Waze.";
+      return;
+    }
+    destinoMapa = dest;
+    document.getElementById("mapaWaze").href = Seguimiento.urlWaze(p.direccion_entrega, dest);
+    marcadorDestino = L.marker([dest.lat, dest.lng], { icon: Seguimiento.iconoMapa("🏠", "#ff6500") }).addTo(mapa);
+    if (!gps.ultima) {
+      mapa.setView([dest.lat, dest.lng], 15);
+      document.getElementById("mapaEstado").textContent = gps.error || "Esperando tu ubicación GPS...";
+    }
+    calcularRuta(true);
+  });
+}
+
+function obtenerDestino(id) {
+  var p = pedidos[id];
+  if (p.destino) return Promise.resolve(p.destino);
+  return Seguimiento.geocodificar(p.direccion_entrega).then(function (d) {
+    if (d) {
+      // Se guarda para no volver a buscar la dirección, y para mostrar la casa en el mapa del cliente.
+      p.destino = d;
+      db.collection("Pedidos").doc(id).update({ destino: d }).catch(function () {});
+      if (p.tracking_id) db.collection("seguimiento").doc(p.tracking_id).update({ destino: d }).catch(function () {});
+    }
+    return d;
+  });
+}
+
+function moverEnMapa() {
+  if (!mapa || !gps.ultima) return;
+  var ll = [gps.ultima.lat, gps.ultima.lng];
+  if (!marcadorYo) marcadorYo = L.marker(ll, { icon: Seguimiento.iconoMapa("🚚", "#3b82f6"), zIndexOffset: 1000 }).addTo(mapa);
+  else marcadorYo.setLatLng(ll);
+  if (seguirme && !rutaPrimera) mapa.panTo(ll);
+  calcularRuta(false);
+}
+
+function calcularRuta(forzar) {
+  if (!destinoMapa || !gps.ultima) return;
+  var ahora = Date.now();
+  if (!forzar && rutaDesde && ahora - rutaMs < 60000 && Seguimiento.distanciaMetros(rutaDesde, gps.ultima) < 150) return;
+  rutaDesde = gps.ultima; rutaMs = ahora;
+  var id = mapaPedidoId;
+  Seguimiento.ruta(gps.ultima, destinoMapa).then(function (r) {
+    if (!mapaAbierto || mapaPedidoId !== id) return;
+    var directa = Seguimiento.distanciaMetros(gps.ultima, destinoMapa);
+    if (lineaRuta) mapa.removeLayer(lineaRuta);
+    if (r) {
+      lineaRuta = L.polyline(r.puntos, { color: "#ff6500", weight: 6, opacity: 0.9 }).addTo(mapa);
+      document.getElementById("mapaEta").textContent = "~" + Seguimiento.textoMinutos(r.segundos);
+      document.getElementById("mapaDist").textContent = Seguimiento.textoDistancia(r.metros);
+      document.getElementById("mapaEstado").textContent = directa < 80 ? "📍 ¡Llegaste al destino!" : "Para indicaciones por voz, abre Google Maps o Waze.";
+    } else {
+      lineaRuta = L.polyline([[gps.ultima.lat, gps.ultima.lng], [destinoMapa.lat, destinoMapa.lng]], { color: "#ff6500", weight: 4, dashArray: "8 8" }).addTo(mapa);
+      document.getElementById("mapaEta").textContent = Seguimiento.textoDistancia(directa);
+      document.getElementById("mapaDist").textContent = "en línea recta";
+      document.getElementById("mapaEstado").textContent = "No se pudo calcular la ruta por calles. Usa Google Maps o Waze.";
+    }
+    if (rutaPrimera) {
+      rutaPrimera = false;
+      mapa.fitBounds(lineaRuta.getBounds(), { padding: [50, 50] });
+    }
+  });
+}
+
+function cerrarMapa() {
+  if (!mapaAbierto) return;
+  document.getElementById("mapaRuta").classList.remove("visible");
+  mapaAbierto = false;
+  mapaPedidoId = null;
+  actualizarGps();
+}
+document.getElementById("mapaVolver").addEventListener("click", function () { history.back(); });
+window.addEventListener("popstate", cerrarMapa);
+document.getElementById("btnCentrar").addEventListener("click", function () {
+  seguirme = true;
+  if (gps.ultima) mapa.setView([gps.ultima.lat, gps.ultima.lng], 16);
+});
+
+// --- ESCÁNER ---
 
 var qr = null;
 function abrirEscaner() {
   document.getElementById("escaner").style.display = "flex";
-  qr = new Html5Qrcode("lector");
-  qr.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 260, height: 160 } }, function (texto) {
+  qr = new Html5Qrcode("lector", Etiquetas.configLector());
+  qr.start({ facingMode: "environment" }, Etiquetas.opcionesEscaner(), function (texto) {
     cerrarEscaner().then(function () { encontrar(texto.trim()); });
   }, function () {}).catch(function (e) {
     cerrarEscaner();
@@ -170,46 +913,49 @@ function cerrarEscaner() {
 }
 
 function encontrar(codCrudo) {
-  var codLeido = codCrudo.trim();
+  // El QR de Mercado Libre trae un JSON: se usa el número de envío que viene dentro.
+  var codLeido = Etiquetas.parsearCodigo(codCrudo).codigo;
   var hallado = null;
   var docIdReal = null;
+  var parciales = [];
+  if (!codLeido) return;
 
-  lista.querySelectorAll(".pedido").forEach(function (c) { 
+  // Primero coincidencia exacta; si no hay, coincidencia parcial solo con códigos no vacíos
+  // (un código vacío "coincidía" con cualquier etiqueta y marcaba el pedido equivocado).
+  lista.querySelectorAll(".pedido").forEach(function (c) {
     var codPedido = c.getAttribute("data-cod");
     var docId = c.getAttribute("data-docid");
-
-    if (codLeido.includes(codPedido) || codPedido.includes(codLeido) || docId === codLeido) { 
-      hallado = c; 
+    if (codPedido === codLeido || docId === codLeido) {
+      hallado = c;
       docIdReal = docId;
-    } 
+    } else if (codPedido.length >= 4 && (codLeido.indexOf(codPedido) > -1 || codPedido.indexOf(codLeido) > -1)) {
+      parciales.push(c);
+    }
   });
 
-  if (!hallado) { 
-    alert("⚠️ La etiqueta leída no coincide con tus pedidos asignados."); 
-    return; 
+  if (!hallado && parciales.length === 1) {
+    hallado = parciales[0];
+    docIdReal = hallado.getAttribute("data-docid");
+  }
+
+  if (!hallado) {
+    alert(parciales.length > 1
+      ? "⚠️ La etiqueta coincide con varios pedidos. Márcalo manualmente con el selector de estado."
+      : "⚠️ La etiqueta leída no coincide con tus pedidos asignados.");
+    return;
   }
 
   hallado.scrollIntoView({ behavior: "smooth", block: "center" });
   hallado.style.outline = "3px solid #ff6500";
   setTimeout(function () { hallado.style.outline = ""; }, 4000);
 
-  var sel = hallado.querySelector("select");
-  if (sel) {
-    if (sel.value === "entregado") {
-      alert("ℹ️ Este paquete ya figura como ENTREGADO.");
-      return;
-    }
-
-    db.collection("Pedidos").doc(docIdReal).update({
-      estado: "entregado",
-      fecha_entrega: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(function() {
-      sel.value = "entregado";
-      alert("✅ ¡Paquete entregado registrado con éxito!");
-    }).catch(function(e) {
-      alert("No se pudo actualizar el estado: " + e.message);
-    });
+  if (pedidos[docIdReal] && pedidos[docIdReal].estado === "entregado") {
+    alert("ℹ️ Este paquete ya figura como ENTREGADO.");
+    return;
   }
+  // Etiqueta correcta: se abre la prueba de entrega (foto o firma).
+  toast("✅ Etiqueta correcta: " + (pedidos[docIdReal].codigo_barra || docIdReal));
+  abrirPrueba(docIdReal);
 }
 
 document.getElementById("btnEscanear").addEventListener("click", abrirEscaner);

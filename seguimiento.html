@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Transporte Leen | Sigue tu pedido</title>
+<meta name="theme-color" content="#0b192c">
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="seguimiento-comun.js"></script>
+<style>
+:root {
+  --bg: #0b192c;
+  --surface: #1e3e62;
+  --surface-alt: #172554;
+  --border: rgba(255, 255, 255, 0.15);
+  --text: #ffffff;
+  --text-soft: #cbd5e1;
+  --orange: #ff6500;
+  --amber: #f59e0b;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --purple: #8b5cf6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: rgba(11, 25, 44, 0.95); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+header img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; border: 2px solid var(--orange); }
+header .marca { font-weight: 800; font-size: 16px; }
+header .marca span { color: var(--orange); }
+main { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 14px; }
+.etiqueta { font-size: 11px; color: var(--text-soft); text-transform: uppercase; font-weight: 700; letter-spacing: .06em; }
+.codigo { font-size: 18px; font-weight: 800; color: var(--orange); font-family: ui-monospace, monospace; word-break: break-all; }
+.estado-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 8px 14px; border-radius: 999px; font-weight: 800; font-size: 14px; }
+.estado-pill.pendiente { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid var(--amber); }
+.estado-pill.en_camino { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid var(--blue); }
+.estado-pill.entregado { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid var(--green); }
+.estado-pill.no_entregado { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid var(--red); }
+.estado-pill.devuelto { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid var(--purple); }
+.mensaje { margin-top: 12px; font-size: 14px; color: var(--text-soft); }
+.vivo { width: 9px; height: 9px; border-radius: 50%; background: #60a5fa; animation: pulso 1.6s infinite; }
+@keyframes pulso { 0% { box-shadow: 0 0 0 0 rgba(96,165,250,.7); } 70% { box-shadow: 0 0 0 10px rgba(96,165,250,0); } 100% { box-shadow: 0 0 0 0 rgba(96,165,250,0); } }
+
+.pasos { display: flex; justify-content: space-between; position: relative; margin: 6px 4px 0; }
+.pasos::before { content: ""; position: absolute; top: 18px; left: 10%; right: 10%; height: 3px; background: rgba(255,255,255,.12); }
+.pasos .barra { position: absolute; top: 18px; left: 10%; height: 3px; background: var(--green); transition: width .5s; }
+.paso { position: relative; z-index: 1; text-align: center; flex: 1; }
+.paso .circulo { width: 38px; height: 38px; border-radius: 50%; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 17px; background: var(--surface-alt); border: 2px solid rgba(255,255,255,.15); }
+.paso.hecho .circulo { background: var(--green); border-color: var(--green); }
+.paso.actual .circulo { background: var(--blue); border-color: #60a5fa; }
+.paso.fallo .circulo { background: var(--red); border-color: var(--red); }
+.paso span { font-size: 12px; font-weight: 700; color: var(--text-soft); }
+.paso.hecho span, .paso.actual span { color: var(--text); }
+
+.eta { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.eta .grande { font-size: 26px; font-weight: 800; color: var(--orange); line-height: 1.1; }
+.eta .chico { font-size: 13px; color: var(--text-soft); font-weight: 600; }
+.eta .repartidor { text-align: right; }
+#mapa { height: 340px; border-radius: 16px; overflow: hidden; border: 2px solid var(--orange); margin-bottom: 8px; background: #1a2b40; }
+#frescura { font-size: 12px; color: var(--text-soft); text-align: center; margin-bottom: 14px; }
+#frescura.viejo { color: var(--amber); }
+
+.historial li { list-style: none; display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 13px; }
+.historial li:last-child { border-bottom: none; }
+.historial .hora { color: var(--text-soft); min-width: 110px; }
+.historial .que { font-weight: 700; }
+
+.prueba-img { width: 100%; border-radius: 12px; margin-top: 10px; display: block; border: 1px solid var(--border); }
+.prueba-img.firma { background: #fff; max-height: 140px; object-fit: contain; }
+.ayuda { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 12px; background: #25d366; color: #0b192c; font-weight: 800; font-size: 14px; text-decoration: none; }
+.vacio { text-align: center; padding: 40px 20px; }
+.vacio .icono { font-size: 48px; margin-bottom: 10px; }
+.vacio h2 { font-size: 18px; margin-bottom: 6px; }
+.vacio p { color: var(--text-soft); font-size: 14px; margin-bottom: 18px; }
+.buscar { display: flex; gap: 8px; }
+.buscar input { flex: 1; min-width: 0; padding: 13px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: #fff; font: 600 15px 'Plus Jakarta Sans', sans-serif; text-transform: uppercase; }
+.buscar input:focus { outline: none; border-color: var(--orange); }
+.buscar button { padding: 13px 18px; border-radius: 12px; border: none; background: var(--orange); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+.oculto { display: none !important; }
+footer { text-align: center; font-size: 12px; color: var(--text-soft); padding: 10px 0 24px; }
+</style>
+</head>
+<body>
+<header>
+  <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" alt="Transporte Leen">
+  <div class="marca">TRANSPORTE <span>LEEN</span></div>
+</header>
+
+<main>
+  <div id="cargando" class="card vacio"><div class="icono">📦</div><p>Buscando tu pedido...</p></div>
+
+  <div id="noEncontrado" class="card vacio oculto">
+    <div class="icono">🔍</div>
+    <h2>No encontramos ese pedido</h2>
+    <p>Revisa el enlace que te enviamos o escribe tu código de seguimiento.</p>
+    <form class="buscar" id="formBuscar">
+      <input id="inputCodigo" placeholder="Código del pedido" autocomplete="off">
+      <button type="submit">Buscar</button>
+    </form>
+  </div>
+
+  <div id="vista" class="oculto">
+    <div class="card">
+      <div class="etiqueta">Tu pedido</div>
+      <div class="codigo" id="codigo"></div>
+      <div class="estado-pill" id="estadoPill"></div>
+      <div class="mensaje" id="mensaje"></div>
+    </div>
+
+    <div class="card">
+      <div class="pasos">
+        <div class="barra" id="barra"></div>
+        <div class="paso" id="paso1"><div class="circulo">📥</div><span>Recibido</span></div>
+        <div class="paso" id="paso2"><div class="circulo">🚚</div><span>En camino</span></div>
+        <div class="paso" id="paso3"><div class="circulo">🏠</div><span id="paso3Texto">Entregado</span></div>
+      </div>
+    </div>
+
+    <div id="bloquePrueba" class="card oculto">
+      <div class="etiqueta" style="margin-bottom:6px">Prueba de entrega</div>
+      <div id="pruebaQuien" style="font-weight:700;font-size:14px"></div>
+      <div id="pruebaFotos"></div>
+    </div>
+
+    <div id="bloqueVivo" class="oculto">
+      <div class="card eta">
+        <div>
+          <div class="etiqueta">Llega en</div>
+          <div class="grande" id="eta">—</div>
+          <div class="chico" id="dist"></div>
+        </div>
+        <div class="repartidor">
+          <div class="etiqueta">Repartidor</div>
+          <div style="font-weight:800;font-size:15px" id="repartidor">—</div>
+        </div>
+      </div>
+      <div id="mapa"></div>
+      <div id="frescura"></div>
+    </div>
+
+    <div class="card">
+      <div class="etiqueta" style="margin-bottom:6px">Historial</div>
+      <ul class="historial" id="historial"></ul>
+    </div>
+
+    <a class="ayuda" href="https://wa.me/56940756676?text=" id="ayuda" target="_blank" rel="noopener">💬 ¿Dudas? Escríbenos por WhatsApp</a>
+  </div>
+</main>
+<footer>Más que carga, transportamos confianza</footer>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
+  authDomain: "app-repartos-f3fda.firebaseapp.com",
+  projectId: "app-repartos-f3fda",
+  storageBucket: "app-repartos-f3fda.firebasestorage.app",
+  messagingSenderId: "831323740955",
+  appId: "1:831323740955:web:60d96b496aefb0047151be"
+});
+var db = firebase.firestore();
+var $ = function (id) { return document.getElementById(id); };
+
+var MENSAJES = {
+  pendiente: "Recibimos tu pedido y lo estamos preparando para el despacho. Te avisaremos cuando salga hacia tu dirección.",
+  en_camino: "¡Tu pedido va en camino! Puedes ver en el mapa dónde viene.",
+  entregado: "¡Tu pedido fue entregado! Gracias por confiar en Transporte Leen.",
+  no_entregado: "No pudimos entregar tu pedido. Nos pondremos en contacto contigo para coordinar una nueva entrega.",
+  devuelto: "Tu pedido fue devuelto al remitente. Escríbenos si tienes dudas."
+};
+var HITOS = {
+  pendiente: "📥 Pedido recibido",
+  en_camino: "🚚 Salió a reparto",
+  entregado: "✅ Entregado",
+  no_entregado: "⚠️ No se pudo entregar",
+  devuelto: "↩️ Devuelto al remitente",
+  _reprogramado: "📅 Entrega reprogramada"
+};
+var ICONOS = { pendiente: "📥", en_camino: "", entregado: "✅", no_entregado: "⚠️", devuelto: "↩️" };
+
+var datos = null;
+var mapa = null, marcadorRepartidor = null, marcadorCasa = null, linea = null, encuadrado = false;
+var etaDesde = null, etaMs = 0;
+var cancelarSuscripcion = null;
+
+function mostrar(cual) {
+  ["cargando", "noEncontrado", "vista"].forEach(function (id) { $(id).classList.toggle("oculto", id !== cual); });
+}
+
+function iniciar() {
+  var params = new URLSearchParams(location.search);
+  var token = params.get("id");
+  var codigo = params.get("codigo");
+  if (token) { suscribir(token); return; }
+  if (codigo) { buscarCodigo(codigo); return; }
+  mostrar("noEncontrado");
+}
+
+function buscarCodigo(codigo) {
+  mostrar("cargando");
+  Seguimiento.buscarPorCodigo(db, codigo).then(function (token) {
+    if (!token) { $("inputCodigo").value = codigo; mostrar("noEncontrado"); return; }
+    history.replaceState(null, "", "?id=" + encodeURIComponent(token));
+    suscribir(token);
+  }).catch(function () { mostrar("noEncontrado"); });
+}
+
+$("formBuscar").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var c = $("inputCodigo").value.trim();
+  if (c) buscarCodigo(c);
+});
+
+var tokenActual = null, pruebaCargada = false;
+
+function suscribir(token) {
+  tokenActual = token;
+  pruebaCargada = false;
+  if (cancelarSuscripcion) cancelarSuscripcion();
+  cancelarSuscripcion = db.collection("seguimiento").doc(token).onSnapshot(function (d) {
+    if (!d.exists) { mostrar("noEncontrado"); return; }
+    datos = d.data();
+    pintar();
+  }, function () { mostrar("noEncontrado"); });
+}
+
+function pintar() {
+  var est = datos.estado || "pendiente";
+  mostrar("vista");
+  $("codigo").textContent = datos.codigo || "";
+  var pill = $("estadoPill");
+  pill.className = "estado-pill " + est;
+  pill.innerHTML = (est === "en_camino" ? "<span class='vivo'></span>" : ICONOS[est] || "") + " " + (Seguimiento.ESTADOS[est] || est);
+  var saludo = datos.cliente_nombre ? "Hola " + datos.cliente_nombre + ". " : "";
+  var motivo = est === "no_entregado" && datos.no_entrega && datos.no_entrega.motivo ? " Motivo: " + datos.no_entrega.motivo + "." : "";
+  var texto = MENSAJES[est] || "";
+  if (est === "pendiente" && datos.programado_para && datos.programado_para.toDate) {
+    texto = "📅 Tu entrega fue reprogramada para el " +
+      datos.programado_para.toDate().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" }) +
+      ". Te avisaremos cuando salga hacia tu dirección.";
+  }
+  $("mensaje").textContent = saludo + texto + motivo;
+  $("ayuda").href = "https://wa.me/56940756676?text=" + encodeURIComponent("Hola, consulto por mi pedido " + (datos.codigo || ""));
+
+  // Línea de pasos
+  var nivel = { pendiente: 1, en_camino: 2, entregado: 3, no_entregado: 3, devuelto: 3 }[est] || 1;
+  ["paso1", "paso2", "paso3"].forEach(function (id, i) {
+    var el = $(id);
+    el.className = "paso";
+    if (i + 1 < nivel || (i + 1 === nivel && est === "entregado")) el.classList.add("hecho");
+    else if (i + 1 === nivel) el.classList.add(nivel === 3 ? "fallo" : (nivel === 2 ? "actual" : "hecho"));
+  });
+  $("paso3Texto").textContent = est === "no_entregado" ? "No entregado" : est === "devuelto" ? "Devuelto" : "Entregado";
+  $("barra").style.width = (nivel - 1) * 40 + "%";
+
+  pintarHistorial();
+  pintarVivo();
+  pintarPrueba();
+}
+
+// Foto y firma de la entrega (colección "evidencias", mismo token del enlace).
+function pintarPrueba() {
+  var bloque = $("bloquePrueba");
+  if (datos.estado !== "entregado") { bloque.classList.add("oculto"); pruebaCargada = false; return; }
+  var e = datos.entrega || {};
+  var quien = e.recibe ? e.recibe + (e.relacion ? " (" + e.relacion + ")" : "") : (e.relacion || "");
+  var hito = (datos.historial || []).filter(function (h) { return h.estado === "entregado"; }).pop();
+  $("pruebaQuien").textContent = (quien ? "Recibido por " + quien : "Pedido entregado") + (hito ? " · " + fechaTexto(hito.fecha) : "");
+  bloque.classList.remove("oculto");
+  if (pruebaCargada || !tokenActual) return;
+  pruebaCargada = true;
+  db.collection("evidencias").doc(tokenActual).get().then(function (d) {
+    var cont = $("pruebaFotos");
+    cont.innerHTML = "";
+    if (!d.exists) return;
+    var ev = d.data();
+    [["foto", "Foto de la entrega", ""], ["firma", "Firma", " firma"]].forEach(function (x) {
+      if (!ev[x[0]]) return;
+      var img = document.createElement("img");
+      img.className = "prueba-img" + x[2];
+      img.alt = x[1];
+      img.src = ev[x[0]];
+      cont.appendChild(img);
+    });
+  }).catch(function () { pruebaCargada = false; });
+}
+
+function fechaTexto(ts) {
+  if (!ts || !ts.toDate) return "";
+  return ts.toDate().toLocaleString("es-CL", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function pintarHistorial() {
+  var h = (datos.historial || []).slice().sort(function (a, b) {
+    return (b.fecha ? b.fecha.toMillis() : 0) - (a.fecha ? a.fecha.toMillis() : 0);
+  });
+  var ul = $("historial");
+  ul.innerHTML = "";
+  if (!h.length) { ul.innerHTML = "<li><span class='que'>Pedido registrado</span></li>"; return; }
+  // Un "pendiente" que no es el primero significa que la entrega se reprogramó.
+  var primero = h[h.length - 1];
+  h.forEach(function (e) {
+    if (e !== primero && e.estado === "pendiente") e = { estado: "_reprogramado", fecha: e.fecha };
+    var li = document.createElement("li");
+    var hora = document.createElement("span"); hora.className = "hora"; hora.textContent = fechaTexto(e.fecha);
+    var que = document.createElement("span"); que.className = "que"; que.textContent = HITOS[e.estado] || e.estado;
+    li.appendChild(hora); li.appendChild(que);
+    ul.appendChild(li);
+  });
+}
+
+function pintarVivo() {
+  var enCamino = datos.estado === "en_camino";
+  $("bloqueVivo").classList.toggle("oculto", !enCamino);
+  if (!enCamino) return;
+  $("repartidor").textContent = datos.repartidor_nombre || "Transporte Leen";
+
+  if (!mapa) {
+    // Sin zoom con la rueda del mouse: así la página se puede desplazar sin que el mapa la "atrape".
+    mapa = L.map("mapa", { zoomControl: true, scrollWheelZoom: false }).setView([-33.45, -70.66], 12);
+    Seguimiento.capaBase(mapa);
+  }
+  setTimeout(function () { mapa.invalidateSize(); }, 50);
+
+  if (datos.destino && !marcadorCasa) {
+    marcadorCasa = L.marker([datos.destino.lat, datos.destino.lng], { icon: Seguimiento.iconoMapa("🏠", "#ff6500") }).addTo(mapa).bindPopup("Tu dirección");
+  }
+  var u = datos.ubicacion;
+  if (!u) {
+    $("eta").textContent = "—";
+    $("dist").textContent = "Esperando la ubicación del repartidor...";
+    if (datos.destino) mapa.setView([datos.destino.lat, datos.destino.lng], 14);
+    actualizarFrescura();
+    return;
+  }
+  var ll = [u.lat, u.lng];
+  if (!marcadorRepartidor) {
+    marcadorRepartidor = L.marker(ll, { icon: Seguimiento.iconoMapa("🚚", "#3b82f6"), zIndexOffset: 1000 }).addTo(mapa).bindPopup("Tu pedido viene aquí");
+  } else {
+    marcadorRepartidor.setLatLng(ll);
+  }
+  if (!encuadrado) {
+    encuadrado = true;
+    if (datos.destino) mapa.fitBounds([ll, [datos.destino.lat, datos.destino.lng]], { padding: [40, 40] });
+    else mapa.setView(ll, 15);
+  }
+  actualizarEta();
+  actualizarFrescura();
+}
+
+// Tiempo estimado por calles; se recalcula cada 45 s o si el repartidor avanzó más de 300 m.
+function actualizarEta() {
+  var u = datos.ubicacion, dest = datos.destino;
+  if (!u || !dest) {
+    $("eta").textContent = "En camino";
+    $("dist").textContent = "";
+    return;
+  }
+  var ahora = Date.now();
+  if (etaDesde && ahora - etaMs < 45000 && Seguimiento.distanciaMetros(etaDesde, u) < 300) return;
+  etaDesde = { lat: u.lat, lng: u.lng }; etaMs = ahora;
+  Seguimiento.ruta(u, dest).then(function (r) {
+    if (!datos || datos.estado !== "en_camino") return;
+    if (linea) mapa.removeLayer(linea);
+    if (r) {
+      linea = L.polyline(r.puntos, { color: "#ff6500", weight: 5, opacity: 0.85 }).addTo(mapa);
+      $("eta").textContent = Seguimiento.distanciaMetros(u, dest) < 100 ? "¡Llegando!" : "~" + Seguimiento.textoMinutos(r.segundos);
+      $("dist").textContent = Seguimiento.textoDistancia(r.metros) + " de distancia";
+    } else {
+      var m = Seguimiento.distanciaMetros(u, dest);
+      $("eta").textContent = "En camino";
+      $("dist").textContent = "A " + Seguimiento.textoDistancia(m) + " de tu dirección";
+    }
+  });
+}
+
+function actualizarFrescura() {
+  var el = $("frescura");
+  if (!datos || datos.estado !== "en_camino") return;
+  if (!datos.ubicacion || !datos.ubicacion_fecha || !datos.ubicacion_fecha.toMillis) {
+    el.textContent = "";
+    return;
+  }
+  var seg = Math.max(0, Math.round((Date.now() - datos.ubicacion_fecha.toMillis()) / 1000));
+  var texto = seg < 60 ? "hace " + seg + " s" : "hace " + Math.round(seg / 60) + " min";
+  el.className = seg > 180 ? "viejo" : "";
+  el.textContent = seg > 180
+    ? "⏳ Ubicación actualizada " + texto + ". El repartidor puede estar entregando otro pedido."
+    : "📡 Ubicación en vivo · actualizada " + texto;
+}
+setInterval(actualizarFrescura, 5000);
+
+iniciar();
+</script>
+</body>
+</html>

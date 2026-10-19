@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
 
   <!-- Firebase Compatibility SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -164,6 +164,37 @@
       cursor: not-allowed;
     }
 
+    .roles {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 20px;
+    }
+
+    .roles button {
+      flex: 1;
+      margin: 0;
+      padding: 10px 8px;
+      font-size: 13px;
+      background: transparent;
+      color: var(--text-slate);
+      box-shadow: none;
+      border-radius: 10px;
+    }
+
+    .roles button:hover {
+      background: var(--orange-light);
+    }
+
+    .roles button.activo {
+      background: var(--orange-brand);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(255, 101, 0, 0.3);
+    }
+
     #error {
       color: #f87171;
       font-size: 13px;
@@ -179,6 +210,54 @@
     #error:not(:empty) {
       display: block;
     }
+
+    #exito {
+      color: #34d399;
+      font-size: 13px;
+      margin-top: 14px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.12);
+      border-radius: 8px;
+      padding: 8px;
+      display: none;
+    }
+
+    #exito:not(:empty) {
+      display: block;
+    }
+
+    .olvide {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-slate);
+      text-decoration: none;
+    }
+
+    .olvide:hover {
+      color: var(--orange-brand);
+    }
+
+    .roles button {
+      width: auto;
+      min-width: 0;
+      font-size: 12px;
+      gap: 5px;
+      padding: 10px 4px;
+      white-space: nowrap;
+    }
+
+    .roles button svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    /* En celulares angostos se ocultan los íconos para que entren las tres pestañas. */
+    @media (max-width: 420px) {
+      .roles button svg { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -187,7 +266,19 @@
   <div class="brand-header">
     <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo" alt="Transporte Leen">
     <h1>TRANSPORTE <span>LEEN</span></h1>
-    <p class="sub">Ingresa con tu correo y contraseña</p>
+    <p class="sub" id="subtitulo">Ingresa con tu correo y contraseña</p>
+  </div>
+
+  <div class="roles" role="tablist" aria-label="Tipo de acceso">
+    <button type="button" role="tab" data-rol="admin" class="activo" aria-selected="true">
+      <i data-lucide="shield-check" size="16"></i> Administrador
+    </button>
+    <button type="button" role="tab" data-rol="repartidor" aria-selected="false">
+      <i data-lucide="truck" size="16"></i> Repartidor
+    </button>
+    <button type="button" role="tab" data-rol="cliente" aria-selected="false">
+      <i data-lucide="store" size="16"></i> Cliente
+    </button>
   </div>
 
   <div class="form-group">
@@ -210,7 +301,10 @@
     <i data-lucide="log-in" size="18"></i> Iniciar sesión
   </button>
 
+  <a href="#" id="olvide" class="olvide">¿Olvidaste tu contraseña?</a>
+
   <div id="error" role="alert"></div>
+  <div id="exito" role="status"></div>
 </div>
 
 <script>
@@ -228,26 +322,72 @@
   var auth = firebase.auth(), db = firebase.firestore();
   var err = document.getElementById("error"), btn = document.getElementById("btn");
 
-  function irSegunRol(uid) {
+  auth.languageCode = "es";
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+  var nombresRol = { admin: "Administrador", repartidor: "Repartidor", cliente: "Cliente" };
+  var subtitulos = {
+    admin: "Acceso para la administración de pedidos",
+    repartidor: "Acceso para repartidores: tu ruta del día",
+    cliente: "Tiendas y clientes: revisa tus envíos"
+  };
+  // Rol guardado en Firestore -> pestaña del login. Tiendas (vendedor) y destinatarios (cliente) entran por "Cliente".
+  var pestanaDeRol = { admin: "admin", repartidor: "repartidor", vendedor: "cliente", cliente: "cliente" };
+  var paginaDeRol = { admin: "panel-admin.html", repartidor: "dashboard-repartidor.html", vendedor: "portal-cliente.html", cliente: "portal-cliente.html" };
+  var rolElegido = "admin";
+
+  function elegirRol(rol) {
+    if (!nombresRol[rol]) rol = "admin";
+    rolElegido = rol;
+    document.querySelectorAll(".roles button").forEach(function (b) {
+      var activo = b.getAttribute("data-rol") === rol;
+      b.classList.toggle("activo", activo);
+      b.setAttribute("aria-selected", activo ? "true" : "false");
+    });
+    document.getElementById("subtitulo").textContent = subtitulos[rol];
+    err.textContent = "";
+    try { localStorage.setItem("rolLogin", rol); } catch (e) {}
+  }
+
+  document.querySelectorAll(".roles button").forEach(function (b) {
+    b.addEventListener("click", function () { elegirRol(b.getAttribute("data-rol")); });
+  });
+
+  // Pestaña inicial: ?rol=repartidor en la URL, o la última que se usó en este equipo.
+  (function () {
+    var rolUrl = new URLSearchParams(location.search).get("rol");
+    var rolGuardado = null;
+    try { rolGuardado = localStorage.getItem("rolLogin"); } catch (e) {}
+    elegirRol(rolUrl || rolGuardado || "admin");
+  })();
+
+  // validarRol = true solo al pulsar "Iniciar sesión": si la cuenta no corresponde
+  // a la pestaña elegida, no se deja entrar.
+  function irSegunRol(uid, validarRol) {
     return db.collection("usuarios").doc(uid).get().then(function (d) {
       var p = d.exists ? d.data() : null;
       if (!p || p.activo === false) throw new Error("sin-perfil");
-      if (p.rol === "admin") location.href = "panel-admin.html";
-      else if (p.rol === "repartidor") location.href = "dashboard-repartidor.html";
-      else throw new Error("sin-perfil");
+      var pestana = pestanaDeRol[p.rol];
+      if (!pestana) throw new Error("sin-perfil");
+      if (validarRol && pestana !== rolElegido) {
+        var e = new Error("rol-distinto");
+        e.rolReal = pestana;
+        throw e;
+      }
+      location.href = paginaDeRol[p.rol];
     });
   }
 
   function fallo(e) {
     var m = "No se pudo iniciar sesión. Intenta de nuevo.";
     if (e.message === "sin-perfil") m = "Tu cuenta no tiene un rol asignado. Avisa al administrador.";
+    else if (e.message === "rol-distinto") m = "Esta cuenta no es de " + nombresRol[rolElegido] + ". Elige la pestaña \"" + nombresRol[e.rolReal] + "\" para ingresar.";
     else if (["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-email"].indexOf(e.code) > -1) m = "Correo o contraseña incorrectos.";
     else if (e.code === "auth/too-many-requests") m = "Demasiados intentos. Espera unos minutos.";
     err.textContent = m; 
     btn.disabled = false; 
     btn.innerHTML = '<i data-lucide="log-in" size="18"></i> Iniciar sesión';
     lucide.createIcons();
-    if (e.message === "sin-perfil") auth.signOut();
+    if (e.message === "sin-perfil" || e.message === "rol-distinto") auth.signOut();
   }
 
   function entrar() {
@@ -256,8 +396,26 @@
     err.textContent = ""; 
     btn.disabled = true; 
     btn.innerHTML = 'Verificando...';
-    auth.signInWithEmailAndPassword(email, pass).then(function (c) { return irSegunRol(c.user.uid); }).catch(fallo);
+    auth.signInWithEmailAndPassword(email, pass).then(function (c) { return irSegunRol(c.user.uid, true); }).catch(fallo);
   }
+
+  // Envía el correo para crear una contraseña nueva. El mensaje es el mismo exista o no la cuenta,
+  // para no revelar qué correos están registrados.
+  document.getElementById("olvide").addEventListener("click", function (e) {
+    e.preventDefault();
+    var exito = document.getElementById("exito");
+    var email = document.getElementById("email").value.trim();
+    exito.textContent = "";
+    if (!email) { err.textContent = "Escribe tu correo arriba y vuelve a tocar «¿Olvidaste tu contraseña?»."; return; }
+    err.textContent = "";
+    auth.sendPasswordResetEmail(email).then(function () {
+      exito.textContent = "Si el correo está registrado, te enviamos un enlace para crear una contraseña nueva. Revisa también la carpeta de spam.";
+    }).catch(function (e2) {
+      if (e2.code === "auth/invalid-email") err.textContent = "El correo no es válido.";
+      else if (e2.code === "auth/too-many-requests") err.textContent = "Demasiados intentos. Espera unos minutos.";
+      else exito.textContent = "Si el correo está registrado, te enviamos un enlace para crear una contraseña nueva. Revisa también la carpeta de spam.";
+    });
+  });
 
   btn.addEventListener("click", entrar);
   document.getElementById("password").addEventListener("keydown", function (e) { if (e.key === "Enter") entrar(); });
