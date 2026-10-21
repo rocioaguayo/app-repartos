@@ -330,7 +330,9 @@ var auth = firebase.auth();
 // Cada pestaña del navegador guarda su propia sesión (admin y repartidor a la vez). En la APK se mantiene la sesión guardada.
 auth.setPersistence(/; wv\)/.test(navigator.userAgent) ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION).catch(function() {});
 // Funciona con mala señal en bodega: los cambios se guardan y se envían al volver la conexión.
-db.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.warn("Sin modo offline:", e.code); });
+// Sin compartir entre pestañas: cada pestaña puede tener otro usuario (admin y repartidor a la vez);
+// la primera pestaña guarda los datos sin señal y las demás trabajan en línea con su propio usuario.
+db.enablePersistence().catch(function(e) { console.warn("Sin modo offline:", e.code); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function() {});
 // Si cuenta.js no cargó, el panel sigue funcionando (solo falta el botón 🔑 Clave).
 if (window.Cuenta) Cuenta.instalar(auth, "btnSalir");

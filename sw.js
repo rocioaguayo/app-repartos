@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-repartos-v9';
+const CACHE_NAME = 'app-repartos-v10';
 const CACHE_LIBRERIAS = 'app-repartos-librerias-v1';
 const urlsToCache = [
   './',
