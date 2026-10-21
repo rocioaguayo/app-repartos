@@ -96,6 +96,8 @@ header a.volver { font-size: 12px; color: var(--text-soft); text-decoration: non
 .chips-fecha button.activo { background: var(--gold); border-color: var(--gold); color: #fff; }
 input[type=date] { color-scheme: dark; }
 /* Usuarios */
+.seccion-solicitudes { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--text-soft); margin: 16px 2px 8px; }
+.registro.solicitud { border-color: var(--gold); background: linear-gradient(0deg, var(--gold-soft), var(--gold-soft)), var(--surface); }
 .rol-badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; border: 1px solid var(--border); background: var(--surface-alt); white-space: nowrap; }
 .registro.inactivo { opacity: .55; }
 .ayuda-modal { font-size: 13px; color: var(--text-soft); margin: -6px 0 14px; }
@@ -103,6 +105,7 @@ input[type=date] { color-scheme: dark; }
 .error-modal { background: var(--fail-soft); border: 1px solid var(--fail); color: #fca5a5; font-size: 13px; padding: 10px; border-radius: 10px; margin-bottom: 8px; }
 .aviso-usuarios { font-size: 13px; color: var(--text-soft); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
 /* Código manual / lector USB y modo carga */
+.btn-foto-codigo { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; padding: 11px; border-radius: 10px; border: 1px dashed var(--gold); background: var(--gold-soft); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
 .codigo-manual { display: flex; gap: 6px; margin-top: 10px; }
 .codigo-manual input { flex: 1; min-width: 0; padding: 11px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); }
 .codigo-manual button { padding: 0 16px; border-radius: 10px; border: none; background: var(--gold); color: #fff; font-weight: 800; font-family: inherit; cursor: pointer; }
@@ -186,6 +189,8 @@ input[type=date] { color-scheme: dark; }
 <h3>Escaner de Recepción <button class="btn-cerrar" id="cerrarEscanerAdmin">✕</button></h3>
 <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 12px;">Apunta la cámara al código de la etiqueta.</p>
 <div id="reader-admin" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000;"></div>
+<label class="btn-foto-codigo">📸 ¿No lee? Tomar foto del código<input type="file" accept="image/*" capture="environment" id="fotoCodigoCheckin" hidden></label>
+<div class="ocr-estado" id="estadoFotoCheckin"></div>
 <form class="codigo-manual" id="formCodigoCheckin">
 <input type="text" id="codigoCheckin" placeholder="o escribe / usa lector USB" autocomplete="off">
 <button type="submit">OK</button>
@@ -205,16 +210,28 @@ input[type=date] { color-scheme: dark; }
 <!-- Modal: nuevo usuario (cuenta de acceso) -->
 <div id="modalUsuario" class="modal-overlay oculto">
 <div class="modal-caja">
-<h3>Nueva cuenta de acceso<button class="btn-cerrar" id="cerrarUsuario">✕</button></h3>
-<p class="ayuda-modal">La persona recibirá un correo para crear su propia contraseña.</p>
+<h3><span id="usuTitulo">Nueva cuenta de acceso</span><button class="btn-cerrar" id="cerrarUsuario">✕</button></h3>
+<p class="ayuda-modal" id="usuAyuda">Crea el acceso para un repartidor, una tienda o un cliente.</p>
 <div class="campo-form"><label>Tipo de cuenta</label>
 <select id="usuRol">
 <option value="repartidor">🚚 Repartidor</option>
 <option value="vendedor">🏪 Tienda (vendedor)</option>
 <option value="cliente">🙋 Cliente (destinatario)</option>
+<option value="admin">🛡️ Administrador (acceso total)</option>
 </select></div>
 <div class="campo-form"><label>Nombre</label><input type="text" id="usuNombre" autocomplete="off"></div>
 <div class="campo-form"><label>Correo electrónico</label><input type="email" id="usuEmail" autocomplete="off"></div>
+<div class="campo-form" id="usuModoCampo"><label>¿Cómo obtiene su contraseña?</label>
+<div class="chips-fecha" id="usuModo">
+<button type="button" data-modo="clave" class="activo">🔑 Yo le pongo una clave</button>
+<button type="button" data-modo="correo">✉️ Le llega un correo</button>
+</div>
+<div id="usuClaveCampo">
+<div class="codigo-manual" style="margin-top:0"><input type="text" id="usuClave" placeholder="Clave (mínimo 6 caracteres)" autocomplete="off"><button type="button" id="usuSugerir">Sugerir</button></div>
+<div class="ayuda-campo">Entra al instante. Dásela por WhatsApp o en persona; después la puede cambiar con el botón «🔑 Clave».</div>
+</div>
+<div id="usuCorreoAyuda" class="ayuda-campo oculto">Le llega un correo para crear su clave. Debe usar el último correo que reciba y abrirlo antes de 1 hora.</div>
+</div>
 <div class="campo-form"><label id="usuVinculoLabel">Ficha vinculada</label><select id="usuVinculo"></select>
 <div class="ayuda-campo" id="usuVinculoAyuda"></div></div>
 <div class="campo-form" id="usuTelefonoCampo"><label>Teléfono (ej: 56912345678)</label><input type="tel" id="usuTelefono" autocomplete="off"></div>
@@ -231,6 +248,8 @@ input[type=date] { color-scheme: dark; }
 <div class="campo-form"><label>Repartidor que se lleva los paquetes</label><select id="cargaRepartidor"></select></div>
 <div id="reader-carga" class="lector-carga"></div>
 <button class="btn-guardar" id="btnCamaraCarga">📷 Empezar a escanear</button>
+<label class="btn-foto-codigo">📸 ¿No lee? Tomar foto del código<input type="file" accept="image/*" capture="environment" id="fotoCodigoCarga" hidden></label>
+<div class="ocr-estado" id="estadoFotoCarga"></div>
 <form class="codigo-manual" id="formCodigoCarga">
 <input type="text" id="codigoCarga" placeholder="o escribe / usa lector USB" autocomplete="off">
 <button type="submit">OK</button>
@@ -295,6 +314,7 @@ input[type=date] { color-scheme: dark; }
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="seguimiento-comun.js"></script>
 <script src="etiquetas.js"></script>
+<script src="cuenta.js"></script>
 <script>
 var firebaseConfig = {
 apiKey: "AIzaSyA91GQFimdsUUukDs4ew6uj6TPLj51nNWQ",
@@ -310,6 +330,7 @@ var auth = firebase.auth();
 // Funciona con mala señal en bodega: los cambios se guardan y se envían al volver la conexión.
 db.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.warn("Sin modo offline:", e.code); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function() {});
+Cuenta.instalar(auth, "btnSalir");
 
 function esc(t) {
   var d = document.createElement("div");
@@ -373,7 +394,7 @@ campos: [
 }
 };
 
-var cache = { clientes: [], vendedores: [], repartidores: [], pedidos: [], usuarios: [] };
+var cache = { clientes: [], vendedores: [], repartidores: [], pedidos: [], usuarios: [], solicitudes: [] };
 var tipoActivo = "pedidos";
 var editandoId = null;
 var uidActual = null;
@@ -385,15 +406,21 @@ cache.clientes.length + " clientes, " + cache.vendedores.length + " vendedores, 
 }
 
 function suscribirColeccion(tipo) {
-var nombreColeccion = tipo === "usuarios" ? "usuarios" : configEntidades[tipo].coleccion;
+var nombreColeccion = configEntidades[tipo] ? configEntidades[tipo].coleccion : tipo;
 db.collection(nombreColeccion).onSnapshot(function(snapshot) {
 var registros = [];
 snapshot.forEach(function(doc) { registros.push({ id: doc.id, data: doc.data() }); });
 cache[tipo] = registros;
+if (tipo === "solicitudes") {
+// Aviso en la pestaña cuando alguien espera que le activen la cuenta.
+document.querySelector(".tabs [data-tipo='usuarios']").textContent = registros.length ? "Usuarios 🔔" + registros.length : "Usuarios";
+}
 pintarEstadoConexion();
 if (tipo === "repartidores") pintarOpcionesRepartidor();
 if (tipo === tipoActivo || tipoActivo === "pedidos" || tipoActivo === "usuarios") renderLista();
 }, function(error) {
+// Las solicitudes son opcionales: si las reglas aún no las permiten, no se interrumpe el panel.
+if (tipo === "solicitudes") { console.warn("Solicitudes no disponibles:", error.message); return; }
 document.getElementById("estadoConexion").textContent = "Error al conectar (" + nombreColeccion + "): " + error.message;
 });
 }
@@ -462,7 +489,7 @@ var p = d.exists ? d.data() : null;
 if (p && p.rol === "admin" && p.activo !== false) {
 uidActual = u.uid;
 document.getElementById("estadoConexion").textContent = "Conectando a Firestore...";
-["clientes", "vendedores", "repartidores", "usuarios"].forEach(suscribirColeccion);
+["clientes", "vendedores", "repartidores", "usuarios", "solicitudes"].forEach(suscribirColeccion);
 suscribirPedidos();
 } else if (p && p.rol === "repartidor") {
 location.href = "dashboard-repartidor.html";
@@ -634,16 +661,11 @@ return;
 if (!html5QrCodeAdmin) {
 html5QrCodeAdmin = new Html5Qrcode("reader-admin", Etiquetas.configLector());
 }
-html5QrCodeAdmin.start(
-{ facingMode: "environment" },
-Etiquetas.opcionesEscaner(),
-function(decodedText) {
+Etiquetas.iniciarCamara(html5QrCodeAdmin, function(decodedText) {
 detenerYCerrarEscaner();
 procesarCodigoEscaneadoAdmin(decodedText);
-},
-function(errorMessage) {}
-).catch(function(err) {
-alert("No se pudo iniciar la cámara: " + err);
+}).catch(function(err) {
+alert("No se pudo iniciar la cámara: " + err + "\n\nPuedes usar «Tomar foto del código» o escribir el código.");
 });
 }, 300);
 }
@@ -1132,7 +1154,25 @@ cliente: { nombre: "Cliente", icono: "🙋", campo: "clienteId", tipo: "clientes
 
 function renderUsuarios(contenedor) {
 contenedor.innerHTML = "<div class='aviso-usuarios'>👤 Crea cuentas para <b>repartidores</b>, <b>tiendas</b> y <b>clientes</b> con el botón +. " +
-"Les llega un correo para crear su contraseña, y cada uno ve solo lo suyo.</div>";
+"Puedes ponerles una clave tú o enviarles un correo. Cada uno ve solo lo suyo.</div>";
+// Personas con clave en Firebase pero sin rol: entraron a la app y quedaron esperando activación.
+if (cache.solicitudes.length) {
+contenedor.insertAdjacentHTML("beforeend", "<div class='seccion-solicitudes'>🔔 Solicitudes de acceso (" + cache.solicitudes.length + ")</div>");
+cache.solicitudes.forEach(function(s) {
+var fecha = s.data.fecha && s.data.fecha.toDate ? s.data.fecha.toDate().toLocaleString("es-CL", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+var div = document.createElement("div");
+div.className = "registro solicitud";
+div.innerHTML = "<div class='nombre'>" + esc(s.data.email || s.id) + "</div>" +
+"<div class='detalle'>Intentó entrar " + esc(fecha) + " y aún no tiene tipo de cuenta.</div>" +
+"<div class='fila-botones'><button class='btn-editar' data-accion='activar'>✅ Activar</button><button class='btn-editar' data-accion='rechazar'>✕ Descartar</button></div>";
+div.querySelector("[data-accion='activar']").addEventListener("click", function() { abrirFormUsuario({ uid: s.id, email: s.data.email }); });
+div.querySelector("[data-accion='rechazar']").addEventListener("click", function() {
+if (confirm("¿Descartar la solicitud de " + (s.data.email || s.id) + "?")) db.collection("solicitudes").doc(s.id).delete().catch(function(e) { alert(e.message); });
+});
+contenedor.appendChild(div);
+});
+contenedor.insertAdjacentHTML("beforeend", "<div class='seccion-solicitudes'>Cuentas activas</div>");
+}
 var lista = cache.usuarios.slice().sort(function(a, b) {
 return (a.data.activo === false) - (b.data.activo === false) || String(a.data.rol).localeCompare(String(b.data.rol)) || String(a.data.nombre || "").localeCompare(String(b.data.nombre || ""));
 });
@@ -1186,6 +1226,13 @@ throw e;
 function pintarVinculos() {
 var rol = ROLES[document.getElementById("usuRol").value];
 var sel = document.getElementById("usuVinculo");
+// El administrador no se vincula a ninguna ficha: ve todo.
+var campoVinculo = sel.parentNode;
+campoVinculo.classList.toggle("oculto", !rol.campo);
+if (!rol.campo) {
+document.getElementById("usuTelefonoCampo").classList.add("oculto");
+return;
+}
 var usados = {};
 cache.usuarios.forEach(function(u) { if (u.data.rol === document.getElementById("usuRol").value && u.data[rol.campo]) usados[u.data[rol.campo]] = true; });
 document.getElementById("usuVinculoLabel").textContent = rol.etiqueta;
@@ -1211,10 +1258,45 @@ var ficha = buscarPorId(rol.tipo, document.getElementById("usuVinculo").value);
 if (ficha && !document.getElementById("usuNombre").value) document.getElementById("usuNombre").value = ficha.data.nombre || "";
 }
 
-function abrirFormUsuario() {
-["usuNombre", "usuEmail", "usuTelefono"].forEach(function(id) { document.getElementById(id).value = ""; });
+// solicitud: { uid, email } cuando se activa una cuenta que ya existe en Firebase (sin rol).
+var solicitudActiva = null;
+var modoClave = "clave";
+
+function elegirModoClave(modo) {
+modoClave = modo;
+document.querySelectorAll("#usuModo button").forEach(function(b) { b.classList.toggle("activo", b.getAttribute("data-modo") === modo); });
+document.getElementById("usuClaveCampo").classList.toggle("oculto", modo !== "clave");
+document.getElementById("usuCorreoAyuda").classList.toggle("oculto", modo !== "correo");
+document.getElementById("btnCrearUsuario").textContent = solicitudActiva ? "Activar cuenta" : (modo === "clave" ? "Crear cuenta" : "Crear cuenta y enviar correo");
+}
+document.querySelectorAll("#usuModo button").forEach(function(b) {
+b.addEventListener("click", function() { elegirModoClave(b.getAttribute("data-modo")); });
+});
+
+// Clave fácil de dictar por teléfono: "Leen" + 4 números + letra, ej. "Leen4821k".
+function sugerirClave() {
+var a = new Uint32Array(2);
+crypto.getRandomValues(a);
+return "Leen" + (1000 + a[0] % 9000) + "abcdefghjkmnpqrstuvwxyz"[a[1] % 23];
+}
+document.getElementById("usuSugerir").addEventListener("click", function() { document.getElementById("usuClave").value = sugerirClave(); });
+
+function abrirFormUsuario(solicitud) {
+solicitudActiva = solicitud || null;
+["usuNombre", "usuEmail", "usuTelefono", "usuClave"].forEach(function(id) { document.getElementById(id).value = ""; });
 document.getElementById("usuRol").value = "repartidor";
 document.getElementById("usuError").classList.add("oculto");
+var email = document.getElementById("usuEmail");
+email.readOnly = !!solicitud;
+if (solicitud) email.value = solicitud.email || "";
+document.getElementById("usuTitulo").textContent = solicitud ? "Activar cuenta existente" : "Nueva cuenta de acceso";
+document.getElementById("usuAyuda").textContent = solicitud
+? "Esta persona ya tiene clave en Firebase. Elige qué tipo de cuenta es y a qué ficha corresponde."
+: "Crea el acceso para un repartidor, una tienda o un cliente.";
+// Una cuenta existente ya tiene su clave: no se pide otra.
+document.getElementById("usuModoCampo").classList.toggle("oculto", !!solicitud);
+if (!solicitud) document.getElementById("usuClave").value = sugerirClave();
+elegirModoClave("clave");
 pintarVinculos();
 document.getElementById("modalUsuario").classList.remove("oculto");
 }
@@ -1255,43 +1337,57 @@ var email = document.getElementById("usuEmail").value.trim().toLowerCase();
 var vinculo = document.getElementById("usuVinculo").value;
 var telefono = Etiquetas.normalizarTelefono(document.getElementById("usuTelefono").value);
 document.getElementById("usuError").classList.add("oculto");
+var solicitud = solicitudActiva;
+var clave = document.getElementById("usuClave").value.trim();
+var conClave = !solicitud && modoClave === "clave";
 if (!nombre) return errorUsuario("Escribe el nombre.");
 if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return errorUsuario("Escribe un correo válido.");
-if (cache.usuarios.some(function(u) { return (u.data.email || "").toLowerCase() === email; })) return errorUsuario("Ya existe una cuenta con ese correo.");
+if (conClave && clave.length < 6) return errorUsuario("La clave debe tener al menos 6 caracteres.");
+if (!solicitud && cache.usuarios.some(function(u) { return (u.data.email || "").toLowerCase() === email; })) return errorUsuario("Ya existe una cuenta con ese correo.");
+if (rolClave === "admin" && !confirm("⚠️ " + nombre + " tendrá acceso TOTAL: pedidos, clientes, tarifas, reportes y cuentas de usuario.\n\n¿Crear esta cuenta de administrador?")) return;
+var textoBoton = btn.textContent;
 
 btn.disabled = true;
-btn.textContent = "Creando cuenta...";
+btn.textContent = solicitud ? "Activando..." : "Creando cuenta...";
 var fichaId = vinculo;
-var paso = vinculo === "__nuevo__"
+var paso = rol.campo && vinculo === "__nuevo__"
 ? db.collection(rol.coleccion).add(rolClave === "cliente" ? { nombre: nombre, telefono: telefono, direccion: "", notas: "" } : { nombre: nombre, telefono: telefono })
 .then(function(ref) { fichaId = ref.id; })
 : Promise.resolve();
 
-var uid = null;
+var uid = solicitud ? solicitud.uid : null;
 paso.then(function() {
-return authCreadora().createUserWithEmailAndPassword(email, claveAleatoria());
-}).then(function(cred) {
+// Cuenta que ya existe en Firebase: solo se le asigna el rol.
+if (solicitud) return null;
+return authCreadora().createUserWithEmailAndPassword(email, conClave ? clave : claveAleatoria()).then(function(cred) {
 uid = cred.user.uid;
 return authCreadora().signOut();
+});
 }).then(function() {
 var perfil = { rol: rolClave, nombre: nombre, email: email, activo: true, creado: firebase.firestore.FieldValue.serverTimestamp() };
-perfil[rol.campo] = fichaId;
+if (rol.campo) perfil[rol.campo] = fichaId;
 return db.collection("usuarios").doc(uid).set(perfil);
 }).then(function() {
-return enviarInvitacion(email, rolClave);
+if (solicitud) return db.collection("solicitudes").doc(uid).delete().catch(function() {});
+if (!conClave) return enviarInvitacion(email, rolClave);
 }).then(function() {
 cerrarFormUsuario();
-alert("✅ Cuenta creada. Se envió un correo a " + email + " para que cree su contraseña.\n\nSi no le llega, que revise la carpeta de spam o usa «Reenviar invitación».");
+var pestana = rolClave === "admin" ? "Administrador" : (rolClave === "repartidor" ? "Repartidor" : "Cliente");
+if (solicitud) alert("✅ Cuenta activada. " + nombre + " ya puede entrar con su clave por la pestaña «" + pestana + "».");
+else if (conClave) alert("✅ Cuenta creada. Envíale estos datos a " + nombre + ":\n\nPágina: " + new URL("login.html", location.href).href +
+"\nPestaña: " + pestana + "\nCorreo: " + email + "\nClave: " + clave + "\n\nDespués puede cambiar la clave con el botón «🔑 Clave».");
+else alert("✅ Cuenta creada. Se envió un correo a " + email + " para que cree su contraseña.\n\nImportante: debe usar el ÚLTIMO correo que reciba y abrirlo antes de 1 hora. Si no le llega, que revise spam.");
 }).catch(function(e) {
 var m = e.message;
-if (e.code === "auth/email-already-in-use") m = "Ese correo ya tiene una cuenta en Firebase. Si es de esta persona, pídele que use «¿Olvidaste tu contraseña?» en el login.";
+if (e.code === "auth/email-already-in-use") m = "Ese correo ya tiene una cuenta en Firebase. Pídele a la persona que entre una vez a la app con su correo y clave: aparecerá aquí arriba como «Solicitud de acceso» y la activas con un toque.";
 else if (e.code === "auth/invalid-email") m = "El correo no es válido.";
+else if (e.code === "auth/weak-password") m = "La clave es muy débil: usa al menos 6 caracteres.";
 else if (e.code === "auth/operation-not-allowed") m = "El acceso con correo y contraseña está desactivado en Firebase (Authentication > Sign-in method).";
 else if (uid) m = "La cuenta se creó, pero hubo un problema después: " + e.message;
 errorUsuario(m);
 }).then(function() {
 btn.disabled = false;
-btn.textContent = "Crear cuenta y enviar invitación";
+btn.textContent = textoBoton;
 });
 });
 
@@ -1323,13 +1419,13 @@ document.getElementById("btnCamaraCarga").addEventListener("click", function() {
 if (lectorCarga && lectorCarga.isScanning) { detenerCamaraCarga(); return; }
 if (!document.getElementById("cargaRepartidor").value) { alert("Primero elige el repartidor."); return; }
 if (!lectorCarga) lectorCarga = new Html5Qrcode("reader-carga", Etiquetas.configLector());
-lectorCarga.start({ facingMode: "environment" }, Etiquetas.opcionesEscaner(), function(texto) {
+Etiquetas.iniciarCamara(lectorCarga, function(texto) {
 // La cámara lee el mismo código varias veces seguidas: se ignora durante 3 s.
 var ahora = Date.now();
 if (texto === ultimoLeido && ahora - ultimoLeidoMs < 3000) return;
 ultimoLeido = texto; ultimoLeidoMs = ahora;
 cargarPaquete(texto);
-}, function() {}).then(function() {
+}).then(function() {
 document.getElementById("btnCamaraCarga").textContent = "⏹ Detener cámara";
 }).catch(function(e) { alert("No se pudo iniciar la cámara: " + e); });
 });
@@ -1340,6 +1436,30 @@ var campo = document.getElementById("codigoCarga");
 var texto = campo.value.trim();
 campo.value = "";
 if (!texto) return;
+if (!document.getElementById("cargaRepartidor").value) { alert("Primero elige el repartidor."); return; }
+cargarPaquete(texto);
+});
+
+// Plan B de la cámara: leer el código desde una foto (check-in y modo carga).
+function conectarFotoCodigo(inputId, estadoId, alLeer) {
+document.getElementById(inputId).addEventListener("change", function(e) {
+var archivo = e.target.files && e.target.files[0];
+e.target.value = "";
+if (!archivo) return;
+var estado = document.getElementById(estadoId);
+estado.textContent = "Buscando el código en la foto...";
+Etiquetas.leerCodigoDeFoto(archivo).then(function(texto) {
+estado.textContent = "✅ Código leído.";
+alLeer(texto);
+}).catch(function(err) { estado.textContent = "⚠️ " + err.message; });
+});
+}
+conectarFotoCodigo("fotoCodigoCheckin", "estadoFotoCheckin", function(texto) {
+document.getElementById("estadoFotoCheckin").textContent = "";
+detenerYCerrarEscaner();
+procesarCodigoEscaneadoAdmin(texto);
+});
+conectarFotoCodigo("fotoCodigoCarga", "estadoFotoCarga", function(texto) {
 if (!document.getElementById("cargaRepartidor").value) { alert("Primero elige el repartidor."); return; }
 cargarPaquete(texto);
 });
