@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Transporte Leen | Mis envíos</title>
+<title>App Leen | Mis envíos</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b192c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,8 +79,8 @@ main { max-width: 640px; margin: 0 auto; padding: 16px; }
 <body>
 <header>
   <div class="marca">
-    <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" alt="Transporte Leen">
-    <h1 id="titulo">Mis envíos<small id="subtitulo">Transporte Leen</small></h1>
+    <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" alt="Transportes Leen">
+    <h1 id="titulo">Mis envíos<small id="subtitulo">App Leen</small></h1>
   </div>
   <button id="salir">Salir</button>
 </header>
@@ -135,7 +135,7 @@ auth.onAuthStateChanged(function (u) {
     var campo = esTienda ? "vendedor_id" : "cliente_id";
     var id = esTienda ? p.vendedorId : p.clienteId;
     $("titulo").innerHTML = (esTienda ? "Envíos de mi tienda" : "Mis pedidos") + "<small>" + esc(p.nombre || "") + "</small>";
-    if (!id) { aviso("Tu cuenta aún no está vinculada. Avisa a Transporte Leen."); return; }
+    if (!id) { aviso("Tu cuenta aún no está vinculada. Avisa a Transportes Leen."); return; }
     db.collection("Pedidos").where(campo, "==", id).onSnapshot(function (s) {
       pedidos = [];
       s.forEach(function (doc) { pedidos.push({ id: doc.id, data: doc.data() }); });
@@ -209,7 +209,7 @@ function tarjeta(it) {
     "<div class='acciones'>" +
       (enlace ? "<a class='principal' href='" + esc(enlace) + "' target='_blank' rel='noopener'>" + (est === "en_camino" ? "📍 Ver en el mapa" : "🔗 Seguimiento") + "</a>" : "") +
       (est === "entregado" && p.tracking_id ? "<button data-prueba='1'>🧾 Prueba</button>" : "") +
-      (esTienda && enlace && tel ? "<a class='wsp' target='_blank' rel='noopener' href='https://wa.me/" + tel + "?text=" + encodeURIComponent("Hola " + Seguimiento.primerNombre(p.cliente_nombre) + ", puedes seguir tu pedido " + (p.codigo_barra || "") + " de Transporte Leen aquí: " + enlace) + "'>💬 Enviar al comprador</a>" : "") +
+      (esTienda && enlace && tel ? "<a class='wsp' target='_blank' rel='noopener' href='https://wa.me/" + tel + "?text=" + encodeURIComponent("Hola " + Seguimiento.primerNombre(p.cliente_nombre) + ", puedes seguir tu pedido " + (p.codigo_barra || "") + " de Transportes Leen aquí: " + enlace) + "'>💬 Enviar al comprador</a>" : "") +
     "</div>";
   var bp = div.querySelector("[data-prueba]");
   if (bp) bp.addEventListener("click", function () { verPrueba(p.tracking_id, p.codigo_barra || it.id); });

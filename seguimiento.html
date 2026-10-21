@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Transporte Leen | Sigue tu pedido</title>
+<title>App Leen | Sigue tu pedido</title>
 <meta name="theme-color" content="#0b192c">
 <meta name="robots" content="noindex">
 <link rel="icon" href="icon-192.png">
@@ -91,8 +91,8 @@ footer { text-align: center; font-size: 12px; color: var(--text-soft); padding: 
 </head>
 <body>
 <header>
-  <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" alt="Transporte Leen">
-  <div class="marca">TRANSPORTE <span>LEEN</span></div>
+  <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" alt="Transportes Leen">
+  <div class="marca">APP <span>LEEN</span></div>
 </header>
 
 <main>
@@ -172,7 +172,7 @@ var $ = function (id) { return document.getElementById(id); };
 var MENSAJES = {
   pendiente: "Recibimos tu pedido y lo estamos preparando para el despacho. Te avisaremos cuando salga hacia tu dirección.",
   en_camino: "¡Tu pedido va en camino! Puedes ver en el mapa dónde viene.",
-  entregado: "¡Tu pedido fue entregado! Gracias por confiar en Transporte Leen.",
+  entregado: "¡Tu pedido fue entregado! Gracias por confiar en Transportes Leen.",
   no_entregado: "No pudimos entregar tu pedido. Nos pondremos en contacto contigo para coordinar una nueva entrega.",
   devuelto: "Tu pedido fue devuelto al remitente. Escríbenos si tienes dudas."
 };
@@ -321,7 +321,7 @@ function pintarVivo() {
   var enCamino = datos.estado === "en_camino";
   $("bloqueVivo").classList.toggle("oculto", !enCamino);
   if (!enCamino) return;
-  $("repartidor").textContent = datos.repartidor_nombre || "Transporte Leen";
+  $("repartidor").textContent = datos.repartidor_nombre || "Transportes Leen";
 
   if (!mapa) {
     // Sin zoom con la rueda del mouse: así la página se puede desplazar sin que el mapa la "atrape".

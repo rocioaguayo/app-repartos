@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>App-Repartos - Administración</title>
+<title>App Leen · Administración</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0b192c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -140,8 +140,8 @@ input[type=date] { color-scheme: dark; }
 
 <header>
 <div class="marca">
-  <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo-header" alt="Transporte Leen">
-  ⚙ Administración
+  <img src="https://lh3.googleusercontent.com/d/1oL2f76kZu7bM0JVvcVgL9jtYniuKQtSc" class="brand-logo-header" alt="Transportes Leen">
+  App Leen · Admin
 </div>
 <a href="#" class="volver" id="btnSalir">Salir</a>
 </header>
@@ -1192,15 +1192,18 @@ div.innerHTML =
 (activo ? "" : "<div class='detalle' style='color:#f87171'>Cuenta desactivada</div>") +
 "</div><span class='rol-badge'>" + rol.icono + " " + esc(rol.nombre) + "</span></div>" +
 "<div class='fila-botones'>" +
-(d.email ? "<button class='btn-editar' data-accion='invitar'>✉️ Reenviar invitación</button>" : "") +
+(d.email ? "<button class='btn-editar' data-accion='invitar'>✉️ Correo para clave nueva</button>" : "") +
 (propio ? "" : "<button class='btn-editar' data-accion='activo'>" + (activo ? "⏸ Desactivar" : "▶️ Activar") + "</button>") +
 "</div>";
 div.querySelectorAll("[data-accion]").forEach(function(b) {
 b.addEventListener("click", function() {
 if (b.getAttribute("data-accion") === "invitar") {
+if (!confirm("¿Enviar a " + d.email + " un correo para crear una clave nueva?\n\nSu clave actual seguirá funcionando hasta que cree la nueva.")) return;
 b.disabled = true;
-enviarInvitacion(d.email, d.rol).then(function() { b.textContent = "✅ Invitación enviada"; })
-.catch(function(e) { b.disabled = false; alert("No se pudo enviar: " + e.message); });
+enviarInvitacion(d.email, d.rol).then(function() {
+b.textContent = "✅ Correo enviado";
+alert("✅ Correo enviado a " + d.email + ".\n\n" + INSTRUCCIONES_CORREO);
+}).catch(function(e) { b.disabled = false; alert("No se pudo enviar: " + e.message); });
 } else {
 var nuevo = !activo;
 if (!nuevo && !confirm("¿Desactivar la cuenta de " + (d.nombre || d.email) + "? No podrá entrar hasta que la reactives.")) return;
@@ -1324,11 +1327,29 @@ crypto.getRandomValues(a);
 return Array.prototype.map.call(a, function(n) { return n.toString(36); }).join("") + "Aa1!";
 }
 
-function errorUsuario(t) {
+function errorUsuario(t, emailParaClave) {
 var el = document.getElementById("usuError");
 el.textContent = t;
 el.classList.remove("oculto");
+// Cuenta que ya existe con clave desconocida: se ofrece enviarle el correo de clave nueva ahí mismo.
+if (emailParaClave) {
+var b = document.createElement("button");
+b.type = "button";
+b.className = "btn-guardar";
+b.style.marginTop = "10px";
+b.textContent = "✉️ Enviar correo para crear clave nueva";
+b.addEventListener("click", function() {
+b.disabled = true;
+enviarInvitacion(emailParaClave, document.getElementById("usuRol").value).then(function() {
+el.textContent = "✅ Correo enviado a " + emailParaClave + ". " + INSTRUCCIONES_CORREO;
+}).catch(function(e) { b.disabled = false; el.textContent = "No se pudo enviar: " + e.message; });
+});
+el.appendChild(b);
 }
+}
+
+var INSTRUCCIONES_CORREO = "Dile a la persona: abre SOLO este último correo (los anteriores ya no sirven), antes de 1 hora, " +
+"crea tu clave y entra a la app. Si no lo ves, revisa spam. Si la cuenta aún no tiene tipo, aparecerá aquí como solicitud 🔔 para activarla.";
 
 document.getElementById("btnCrearUsuario").addEventListener("click", function() {
 var btn = this;
@@ -1344,7 +1365,7 @@ var conClave = !solicitud && modoClave === "clave";
 if (!nombre) return errorUsuario("Escribe el nombre.");
 if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return errorUsuario("Escribe un correo válido.");
 if (conClave && clave.length < 6) return errorUsuario("La clave debe tener al menos 6 caracteres.");
-if (!solicitud && cache.usuarios.some(function(u) { return (u.data.email || "").toLowerCase() === email; })) return errorUsuario("Ya existe una cuenta con ese correo.");
+if (!solicitud && cache.usuarios.some(function(u) { return (u.data.email || "").toLowerCase() === email; })) return errorUsuario("Esta persona ya tiene cuenta en la app. Si olvidó su clave o nunca la creó, envíale el correo para crear una nueva:", email);
 if (rolClave === "admin" && !confirm("⚠️ " + nombre + " tendrá acceso TOTAL: pedidos, clientes, tarifas, reportes y cuentas de usuario.\n\n¿Crear esta cuenta de administrador?")) return;
 var textoBoton = btn.textContent;
 
@@ -1380,7 +1401,10 @@ else if (conClave) alert("✅ Cuenta creada. Envíale estos datos a " + nombre +
 else alert("✅ Cuenta creada. Se envió un correo a " + email + " para que cree su contraseña.\n\nImportante: debe usar el ÚLTIMO correo que reciba y abrirlo antes de 1 hora. Si no le llega, que revise spam.");
 }).catch(function(e) {
 var m = e.message;
-if (e.code === "auth/email-already-in-use") m = "Ese correo ya tiene una cuenta en Firebase. Pídele a la persona que entre una vez a la app con su correo y clave: aparecerá aquí arriba como «Solicitud de acceso» y la activas con un toque.";
+if (e.code === "auth/email-already-in-use") {
+errorUsuario("Ese correo ya está registrado, pero con una clave que no conoce. Envíale el correo para crear una clave nueva:", email);
+return;
+}
 else if (e.code === "auth/invalid-email") m = "El correo no es válido.";
 else if (e.code === "auth/weak-password") m = "La clave es muy débil: usa al menos 6 caracteres.";
 else if (e.code === "auth/operation-not-allowed") m = "El acceso con correo y contraseña está desactivado en Firebase (Authentication > Sign-in method).";
@@ -1765,7 +1789,7 @@ return { "Repartidor": r.nombre, "Entregas": r.entregados, "Intentos fallidos": 
 
 var intentosTot = tot.entregados + tot.fallidos;
 var resumen = [
-["Transporte Leen · Reporte de operación"],
+["Transportes Leen · Reporte de operación"],
 ["Período", vDesde.split("-").reverse().join("-") + " al " + vHasta.split("-").reverse().join("-")],
 ["Generado", new Date().toLocaleString("es-CL")],
 [],
@@ -1808,7 +1832,7 @@ hoja(filasTienda, "Por tienda", ["Tarifa entrega", "Tarifa devolución", "Total 
 hoja(filasRepartidor, "Por repartidor", ["Pago por entrega", "Total a pagar"], [24, 10, 16, 9, 16, 14]);
 hoja(detalle, "Detalle", ["Cobro a tienda", "Pago a repartidor"], [16, 16, 13, 16, 22, 14, 34, 18, 18, 9, 22, 28, 13, 15]);
 
-XLSX.writeFile(libro, "Reporte Transporte Leen " + vDesde + " a " + vHasta + ".xlsx");
+XLSX.writeFile(libro, "Reporte Transportes Leen " + vDesde + " a " + vHasta + ".xlsx");
 }
 </script>
 </body>
