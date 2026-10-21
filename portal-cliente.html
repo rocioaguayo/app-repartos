@@ -13,6 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="seguimiento-comun.js"></script>
+<script src="cuenta.js"></script>
 <style>
 :root {
   --bg: #0b192c;
@@ -109,6 +110,7 @@ firebase.initializeApp({
 });
 var auth = firebase.auth(), db = firebase.firestore();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+if (window.Cuenta) Cuenta.instalar(auth, "salir");
 var $ = function (id) { return document.getElementById(id); };
 var perfil = null, esTienda = false;
 var pedidos = [];

@@ -18,6 +18,7 @@
 <script src="seguimiento-comun.js"></script>
 <script src="etiquetas.js"></script>
 <script src="entrega.js"></script>
+<script src="cuenta.js"></script>
 <style>
 :root {
   --bg: #0b192c;
@@ -78,6 +79,7 @@ select:focus { border-color: var(--orange); }
 #escaner { display: none; position: fixed; inset: 0; background: rgba(11, 25, 44, 0.95); backdrop-filter: blur(6px); z-index: 50; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
 #escaner p { color: #fff; font-size: 14px; margin-bottom: 12px; text-align: center; }
 #lector { width: 100%; max-width: 420px; background: #000; border-radius: 14px; overflow: hidden; border: 2px solid var(--orange); }
+.btn-foto-codigo { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 420px; margin-top: 12px; padding: 13px; border-radius: 12px; border: 1px dashed var(--orange); background: var(--orange-soft); color: #fff; font: 700 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
 #escaner button { margin-top: 16px; padding: 12px 28px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-alt); font: 700 14px 'Plus Jakarta Sans', sans-serif; color: var(--text); cursor: pointer; }
 
 /* Aviso de conexión (modo sin señal) */
@@ -170,6 +172,8 @@ select:focus { border-color: var(--orange); }
 <div id="escaner">
   <p>Apunta la cámara al código de barras o QR de la etiqueta.</p>
   <div id="lector"></div>
+  <label class="btn-foto-codigo">📸 ¿No lee? Tomar foto del código<input type="file" accept="image/*" capture="environment" id="fotoCodigo" hidden></label>
+  <p id="estadoFotoCodigo" style="min-height:18px;margin:8px 0 0;font-size:13px"></p>
   <button id="cerrarEscaner">Cancelar</button>
 </div>
 
@@ -267,6 +271,7 @@ var auth = firebase.auth(), db = firebase.firestore();
 // Modo sin señal: los pedidos y cambios se guardan en el celular y se envían al volver la conexión.
 db.enablePersistence({ synchronizeTabs: true }).catch(function (e) { console.warn("Sin modo offline:", e.code); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
+if (window.Cuenta) Cuenta.instalar(auth, "salir");
 var lista = document.getElementById("lista");
 var estados = Seguimiento.ESTADOS;
 var pedidos = {};        // docId -> datos del pedido (del último snapshot)
@@ -898,11 +903,11 @@ var qr = null;
 function abrirEscaner() {
   document.getElementById("escaner").style.display = "flex";
   qr = new Html5Qrcode("lector", Etiquetas.configLector());
-  qr.start({ facingMode: "environment" }, Etiquetas.opcionesEscaner(), function (texto) {
+  document.getElementById("estadoFotoCodigo").textContent = "";
+  Etiquetas.iniciarCamara(qr, function (texto) {
     cerrarEscaner().then(function () { encontrar(texto.trim()); });
-  }, function () {}).catch(function (e) {
-    cerrarEscaner();
-    alert("No se pudo abrir la cámara. Revisa que hayas dado permiso. " + e);
+  }).catch(function (e) {
+    document.getElementById("estadoFotoCodigo").textContent = "⚠️ No se pudo abrir la cámara (" + e + "). Usa «Tomar foto del código».";
   });
 }
 function cerrarEscaner() {
@@ -957,6 +962,19 @@ function encontrar(codCrudo) {
   toast("✅ Etiqueta correcta: " + (pedidos[docIdReal].codigo_barra || docIdReal));
   abrirPrueba(docIdReal);
 }
+
+// Plan B: foto del código (más nítida que el video de la cámara).
+document.getElementById("fotoCodigo").addEventListener("change", function (e) {
+  var archivo = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!archivo) return;
+  var estado = document.getElementById("estadoFotoCodigo");
+  estado.textContent = "Buscando el código en la foto...";
+  Etiquetas.leerCodigoDeFoto(archivo).then(function (texto) {
+    estado.textContent = "";
+    cerrarEscaner().then(function () { encontrar(texto.trim()); });
+  }).catch(function (err) { estado.textContent = "⚠️ " + err.message; });
+});
 
 document.getElementById("btnEscanear").addEventListener("click", abrirEscaner);
 document.getElementById("cerrarEscaner").addEventListener("click", cerrarEscaner);

@@ -330,7 +330,8 @@ var auth = firebase.auth();
 // Funciona con mala señal en bodega: los cambios se guardan y se envían al volver la conexión.
 db.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.warn("Sin modo offline:", e.code); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function() {});
-Cuenta.instalar(auth, "btnSalir");
+// Si cuenta.js no cargó, el panel sigue funcionando (solo falta el botón 🔑 Clave).
+if (window.Cuenta) Cuenta.instalar(auth, "btnSalir");
 
 function esc(t) {
   var d = document.createElement("div");

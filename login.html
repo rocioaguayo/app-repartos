@@ -365,7 +365,15 @@
   function irSegunRol(uid, validarRol) {
     return db.collection("usuarios").doc(uid).get().then(function (d) {
       var p = d.exists ? d.data() : null;
-      if (!p || p.activo === false) throw new Error("sin-perfil");
+      if (p && p.activo === false) throw new Error("desactivada");
+      if (!p) {
+        // Tiene clave en Firebase pero no tipo de cuenta: queda como solicitud para que el admin la active.
+        var u = auth.currentUser;
+        return db.collection("solicitudes").doc(uid).set({
+          email: u ? u.email : "",
+          fecha: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function () {}).then(function () { throw new Error("pendiente"); });
+      }
       var pestana = pestanaDeRol[p.rol];
       if (!pestana) throw new Error("sin-perfil");
       if (validarRol && pestana !== rolElegido) {
@@ -380,6 +388,8 @@
   function fallo(e) {
     var m = "No se pudo iniciar sesión. Intenta de nuevo.";
     if (e.message === "sin-perfil") m = "Tu cuenta no tiene un rol asignado. Avisa al administrador.";
+    else if (e.message === "pendiente") m = "Tu clave es correcta, pero tu cuenta aún no está activada. Ya le avisamos al administrador: cuando la active podrás entrar.";
+    else if (e.message === "desactivada") m = "Tu cuenta está desactivada. Habla con el administrador.";
     else if (e.message === "rol-distinto") m = "Esta cuenta no es de " + nombresRol[rolElegido] + ". Elige la pestaña \"" + nombresRol[e.rolReal] + "\" para ingresar.";
     else if (["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-email"].indexOf(e.code) > -1) m = "Correo o contraseña incorrectos.";
     else if (e.code === "auth/too-many-requests") m = "Demasiados intentos. Espera unos minutos.";
@@ -387,7 +397,7 @@
     btn.disabled = false; 
     btn.innerHTML = '<i data-lucide="log-in" size="18"></i> Iniciar sesión';
     lucide.createIcons();
-    if (e.message === "sin-perfil" || e.message === "rol-distinto") auth.signOut();
+    if (["sin-perfil", "rol-distinto", "pendiente", "desactivada"].indexOf(e.message) > -1) auth.signOut();
   }
 
   function entrar() {
@@ -409,7 +419,7 @@
     if (!email) { err.textContent = "Escribe tu correo arriba y vuelve a tocar «¿Olvidaste tu contraseña?»."; return; }
     err.textContent = "";
     auth.sendPasswordResetEmail(email).then(function () {
-      exito.textContent = "Si el correo está registrado, te enviamos un enlace para crear una contraseña nueva. Revisa también la carpeta de spam.";
+      exito.textContent = "Si el correo está registrado, te enviamos un enlace para crear una contraseña nueva. Usa solo el ÚLTIMO correo que llegue (los anteriores dejan de servir), ábrelo antes de 1 hora y revisa también spam.";
     }).catch(function (e2) {
       if (e2.code === "auth/invalid-email") err.textContent = "El correo no es válido.";
       else if (e2.code === "auth/too-many-requests") err.textContent = "Demasiados intentos. Espera unos minutos.";

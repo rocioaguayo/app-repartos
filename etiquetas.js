@@ -6,10 +6,11 @@
 var Etiquetas = (function () {
 
   // Formatos que lee el escáner: QR y los códigos de barra habituales en etiquetas.
+  // Son pocos a propósito: cada formato extra hace más lenta la lectura en celulares.
   function formatosEscaner() {
     if (!window.Html5QrcodeSupportedFormats) return undefined;
     var F = Html5QrcodeSupportedFormats;
-    return [F.QR_CODE, F.CODE_128, F.CODE_39, F.CODE_93, F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.ITF, F.CODABAR, F.DATA_MATRIX, F.PDF_417];
+    return [F.QR_CODE, F.CODE_128, F.CODE_39, F.EAN_13, F.EAN_8, F.UPC_A, F.ITF, F.DATA_MATRIX];
   }
 
   // Se pasa al crear el lector: new Html5Qrcode(id, Etiquetas.configLector())
@@ -22,15 +23,72 @@ var Etiquetas = (function () {
   }
 
   // Se pasa al iniciar la cámara: lector.start(camara, Etiquetas.opcionesEscaner(), ...)
+  // El QR de Mercado Libre es chico y denso: se pide la cámara en alta resolución y con
+  // enfoque continuo (sin esto el navegador usa 640x480 y no alcanza a leerlo).
   // Recuadro ancho para que entren los códigos de barra largos.
   function opcionesEscaner() {
     return {
-      fps: 12,
+      fps: 10,
       qrbox: function (w, h) {
-        var ancho = Math.floor(Math.min(w * 0.85, 360));
-        return { width: ancho, height: Math.floor(Math.min(h * 0.6, ancho * 0.75)) };
+        var ancho = Math.floor(Math.min(w * 0.9, 520));
+        return { width: Math.max(ancho, 120), height: Math.max(Math.floor(Math.min(h * 0.7, ancho * 0.8)), 100) };
+      },
+      videoConstraints: {
+        facingMode: "environment",
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        advanced: [{ focusMode: "continuous" }]
       }
     };
+  }
+
+  // Enciende la cámara trasera. Si el celular no acepta la alta resolución, reintenta con la básica.
+  function iniciarCamara(lector, alLeer) {
+    var opciones = opcionesEscaner();
+    return lector.start({ facingMode: "environment" }, opciones, alLeer, function () {}).catch(function (e) {
+      delete opciones.videoConstraints;
+      return lector.start({ facingMode: "environment" }, opciones, alLeer, function () {}).catch(function () { throw e; });
+    });
+  }
+
+  // Plan B: leer el código desde una foto tomada con la cámara del celular
+  // (más nítida que el video, funciona mejor con etiquetas arrugadas o con poca luz).
+  var lectorFoto = null;
+  function reducirImagen(archivo, maxLado) {
+    return new Promise(function (ok) {
+      var url = URL.createObjectURL(archivo);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var escala = Math.min(1, maxLado / Math.max(img.width, img.height));
+        if (escala === 1) { ok(archivo); return; }
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.width * escala);
+        c.height = Math.round(img.height * escala);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { ok(b ? new File([b], "etiqueta.jpg", { type: "image/jpeg" }) : archivo); }, "image/jpeg", 0.92);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); ok(archivo); };
+      img.src = url;
+    });
+  }
+
+  function leerCodigoDeFoto(archivo) {
+    if (!window.Html5Qrcode) return Promise.reject(new Error("El lector aún está cargando, intenta de nuevo en un segundo."));
+    var div = document.getElementById("lector-foto-oculto");
+    if (!div) {
+      div = document.createElement("div");
+      div.id = "lector-foto-oculto";
+      div.style.display = "none";
+      document.body.appendChild(div);
+    }
+    if (!lectorFoto) lectorFoto = new Html5Qrcode("lector-foto-oculto", configLector());
+    // Primero en tamaño reducido (rápido) y, si no se encuentra, con la foto original.
+    return reducirImagen(archivo, 1600).then(function (f) {
+      return lectorFoto.scanFile(f, false).catch(function () { return lectorFoto.scanFile(archivo, false); });
+    }).catch(function () {
+      throw new Error("No se encontró ningún código en la foto. Acércate a la etiqueta, con buena luz y sin reflejos.");
+    });
   }
 
   function primero(obj, claves) {
@@ -209,6 +267,8 @@ var Etiquetas = (function () {
   return {
     configLector: configLector,
     opcionesEscaner: opcionesEscaner,
+    leerCodigoDeFoto: leerCodigoDeFoto,
+    iniciarCamara: iniciarCamara,
     parsearCodigo: parsearCodigo,
     normalizarTelefono: normalizarTelefono,
     leerTexto: leerTexto,

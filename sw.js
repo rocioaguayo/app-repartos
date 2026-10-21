@@ -1,4 +1,4 @@
-const CACHE_NAME = 'app-repartos-v7';
+const CACHE_NAME = 'app-repartos-v8';
 const CACHE_LIBRERIAS = 'app-repartos-librerias-v1';
 const urlsToCache = [
   './',
@@ -13,6 +13,7 @@ const urlsToCache = [
   './seguimiento-comun.js',
   './etiquetas.js',
   './entrega.js',
+  './cuenta.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
