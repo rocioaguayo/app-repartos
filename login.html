@@ -366,7 +366,9 @@
   });
 
   var auth = firebase.auth(), db = firebase.firestore();
-  var err = document.getElementById("error"), btn = document.getElementById("btn");
+  // Cada pestaña del navegador guarda su propia sesión (admin y repartidor a la vez). En la APK se mantiene la sesión guardada.
+  auth.setPersistence(/; wv\)/.test(navigator.userAgent) ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION).catch(function () {});
+  var err =document.getElementById("error"), btn = document.getElementById("btn");
 
   auth.languageCode = "es";
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});

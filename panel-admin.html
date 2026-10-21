@@ -327,6 +327,8 @@ appId: "1:831323740955:web:60d96b496aefb0047151be"
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 var auth = firebase.auth();
+// Cada pestaña del navegador guarda su propia sesión (admin y repartidor a la vez). En la APK se mantiene la sesión guardada.
+auth.setPersistence(/; wv\)/.test(navigator.userAgent) ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION).catch(function() {});
 // Funciona con mala señal en bodega: los cambios se guardan y se envían al volver la conexión.
 db.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.warn("Sin modo offline:", e.code); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function() {});
@@ -483,9 +485,21 @@ return { id: doc.id, data: doc.data() };
 });
 }
 
+// Lee el perfil; si Firebase lo rechaza por un instante (reglas recién publicadas, sesión
+// renovándose), reintenta hasta 3 veces antes de mostrar el error.
+function leerPerfil(uid, intento) {
+return db.collection("usuarios").doc(uid).get().catch(function(e) {
+if (intento >= 3) throw e;
+document.getElementById("estadoConexion").textContent = "Verificando sesión… (reintento " + intento + ")";
+return auth.currentUser.getIdToken(true).catch(function() {}).then(function() {
+return new Promise(function(ok) { setTimeout(ok, 1200 * intento); });
+}).then(function() { return leerPerfil(uid, intento + 1); });
+});
+}
+
 auth.onAuthStateChanged(function(u) {
 if (!u) { location.href = "login.html"; return; }
-db.collection("usuarios").doc(u.uid).get().then(function(d) {
+leerPerfil(u.uid, 1).then(function(d) {
 var p = d.exists ? d.data() : null;
 if (p && p.rol === "admin" && p.activo !== false) {
 uidActual = u.uid;
@@ -500,7 +514,7 @@ location.href = "portal-cliente.html";
 auth.signOut().then(function() { location.href = "login.html"; });
 }
 }).catch(function(e) {
-document.getElementById("estadoConexion").textContent = "Error al verificar tu perfil: " + e.message;
+document.getElementById("estadoConexion").textContent = "No se pudo verificar tu perfil (" + e.message + "). Cierra las otras pestañas de la app, recarga con Ctrl + Shift + R y vuelve a entrar.";
 });
 });
 

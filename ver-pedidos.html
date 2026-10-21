@@ -71,6 +71,8 @@
     appId: "1:831323740955:web:60d96b496aefb0047151be"
   });
   var auth = firebase.auth(), db = firebase.firestore();
+  // Cada pestaña del navegador guarda su propia sesión. En la APK se mantiene la sesión guardada.
+  auth.setPersistence(/; wv\)/.test(navigator.userAgent) ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION).catch(function () {});
   var estadoDiv = document.getElementById("estado");
   var listaDiv = document.getElementById("lista");
 
