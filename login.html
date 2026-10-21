@@ -226,6 +226,41 @@
       display: block;
     }
 
+    .sesion {
+      text-align: center;
+    }
+
+    .sesion-txt {
+      color: var(--text-slate);
+      font-size: 14px;
+    }
+
+    .sesion-mail {
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .sesion-rol {
+      color: var(--orange-brand);
+      font-size: 13px;
+      font-weight: 700;
+      margin: 4px 0 18px;
+    }
+
+    .btn-otra {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-white);
+      box-shadow: none;
+      margin-top: 10px;
+    }
+
+    .btn-otra:hover {
+      background: var(--navy-card);
+    }
+
     .olvide {
       display: inline-block;
       margin-top: 14px;
@@ -269,6 +304,16 @@
     <p class="sub" id="subtitulo">Ingresa con tu correo y contraseña</p>
   </div>
 
+  <!-- Sesión que quedó abierta en este navegador: se pregunta antes de entrar -->
+  <div id="sesionAbierta" class="sesion" hidden>
+    <p class="sesion-txt">Hay una sesión abierta en este navegador:</p>
+    <p class="sesion-mail" id="sesionMail"></p>
+    <p class="sesion-rol" id="sesionRol"></p>
+    <button type="button" id="btnContinuar"><i data-lucide="log-in" size="18"></i> Continuar con esta cuenta</button>
+    <button type="button" id="btnOtra" class="btn-otra"><i data-lucide="user-round" size="18"></i> Usar otra cuenta</button>
+  </div>
+
+  <div id="formLogin">
   <div class="roles" role="tablist" aria-label="Tipo de acceso">
     <button type="button" role="tab" data-rol="admin" class="activo" aria-selected="true">
       <i data-lucide="shield-check" size="16"></i> Administrador
@@ -302,6 +347,7 @@
   </button>
 
   <a href="#" id="olvide" class="olvide">¿Olvidaste tu contraseña?</a>
+  </div>
 
   <div id="error" role="alert"></div>
   <div id="exito" role="status"></div>
@@ -429,7 +475,36 @@
 
   btn.addEventListener("click", entrar);
   document.getElementById("password").addEventListener("keydown", function (e) { if (e.key === "Enter") entrar(); });
-  auth.onAuthStateChanged(function (u) { if (u && !btn.disabled) irSegunRol(u.uid).catch(function(){}); });
+  // Si quedó una sesión abierta en este navegador, no se entra solo: se pregunta.
+  var nombreRolGuardado = { admin: "Administrador", repartidor: "Repartidor", vendedor: "Tienda", cliente: "Cliente" };
+  function mostrarFormulario() {
+    document.getElementById("sesionAbierta").hidden = true;
+    document.getElementById("formLogin").hidden = false;
+  }
+  function mostrarSesion(u) {
+    document.getElementById("sesionMail").textContent = u.email || "";
+    document.getElementById("sesionRol").textContent = "";
+    document.getElementById("formLogin").hidden = true;
+    document.getElementById("sesionAbierta").hidden = false;
+    db.collection("usuarios").doc(u.uid).get().then(function (d) {
+      var p = d.exists ? d.data() : null;
+      if (p && nombreRolGuardado[p.rol]) document.getElementById("sesionRol").textContent = nombreRolGuardado[p.rol] + (p.nombre ? " · " + p.nombre : "");
+    }).catch(function () {});
+  }
+  document.getElementById("btnContinuar").addEventListener("click", function () {
+    var u = auth.currentUser;
+    if (!u) { mostrarFormulario(); return; }
+    this.disabled = true;
+    irSegunRol(u.uid).catch(function (e) { mostrarFormulario(); fallo(e); });
+  });
+  document.getElementById("btnOtra").addEventListener("click", function () {
+    auth.signOut().then(mostrarFormulario);
+  });
+  auth.onAuthStateChanged(function (u) {
+    if (!u) { mostrarFormulario(); return; }
+    if (btn.disabled) return; // está entrando con el formulario
+    mostrarSesion(u);
+  });
 </script>
 </body>
 </html>
